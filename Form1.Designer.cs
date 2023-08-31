@@ -69,6 +69,7 @@
             this.txtBox_mangoUrl.Name = "txtBox_mangoUrl";
             this.txtBox_mangoUrl.Size = new System.Drawing.Size(441, 23);
             this.txtBox_mangoUrl.TabIndex = 2;
+            this.txtBox_mangoUrl.TextChanged += new System.EventHandler(this.txtBox_mangoUrl_TextChanged);
             // 
             // txtBox_setFolder
             // 

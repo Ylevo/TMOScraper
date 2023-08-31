@@ -56,6 +56,7 @@ namespace SpanishScraper
                 return;
             }
             toggleButtonsAndShit();
+            doc = webClient.Load(txtBox_mangoUrl.Text);
             Dictionary<string, (string GroupName, string ChapterLink)[]> chapters = GetChaptersLinks(doc);
             string mainFolder = txtBox_setFolder.Text;
             string currentFolder;
@@ -68,7 +69,6 @@ namespace SpanishScraper
             {
                 foreach (var chapter in chapters.Reverse())
                 {
-                    
                     currentFolder = Path.Combine(mainFolder, ReplaceInvalidChars(chapter.Key));
                     if (Directory.Exists(currentFolder)) { addLog("Skipping chapter - folder already exists."); continue; }
                     Directory.CreateDirectory(currentFolder);
@@ -100,8 +100,6 @@ namespace SpanishScraper
             finally
             {
                 toggleButtonsAndShit();
-                listBox_Scannies.Visible = false;
-                listBox_Scannies.Items.Clear();
             }
         }
 
@@ -215,6 +213,11 @@ namespace SpanishScraper
         private void txtBox_Delay_TextChanged(object sender, EventArgs e)
         {
             waitingTime = int.TryParse(txtBox_Delay.Text, out waitingTime) ? waitingTime : 1500;
+        }
+
+        private void txtBox_mangoUrl_TextChanged(object sender, EventArgs e)
+        {
+            listBox_Scannies.Visible = false;
         }
     }
 }
