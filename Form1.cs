@@ -75,6 +75,10 @@ namespace SpanishScraper
                     addLog("Downloading chapter " + chapter.Key);
                     foreach (var uploadedChapter in chapter.Value)
                     {
+                        if (canceled)
+                        {
+                            throw new TaskCanceledException();
+                        }
                         if (listBox_Scannies.CheckedItems.Contains(uploadedChapter.GroupName))
                         {
                             addLog("Downloading chapter by '" + uploadedChapter.GroupName + "'");
@@ -107,8 +111,11 @@ namespace SpanishScraper
         {
             Directory.CreateDirectory(folderPath);
             doc = webClient.Load(chapterLink);
-            string cascadeUrl = doc.DocumentNode.SelectSingleNode("//a[contains(@href, 'cascade')]").Attributes["href"].Value;
-            doc = webClient.Load(cascadeUrl);
+            if (webClient.ResponseUri.ToString().Split('/').Last() != "cascade")
+            {
+                string cascadeUrl = doc.DocumentNode.SelectSingleNode("//a[contains(@href, 'cascade')]").Attributes["href"].Value;
+                doc = webClient.Load(cascadeUrl);
+            }
             var imgUrls = doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]");
             string url, filename;
             var tasks = new List<Task>();
@@ -130,18 +137,18 @@ namespace SpanishScraper
                 return;
             }
 
-            using (var s = await httpClient.GetStreamAsync(uri))
+            var s = await httpClient.GetStreamAsync(uri);
+            
+            if (canceled)
             {
-                if (canceled)
-                {
-                    throw new TaskCanceledException();
-                }
-                using (var fs = new FileStream(path, FileMode.CreateNew))
-                {
-                    addLog("Downloading file " + filename + " ...");
-                    await s.CopyToAsync(fs);
-                }
+                throw new TaskCanceledException();
             }
+            using (var fs = new FileStream(path, FileMode.CreateNew))
+            {
+                addLog("Downloading file " + filename + " ...");
+                await s.CopyToAsync(fs);
+            }
+
         }
 
         private void ListScantardsGroups(HtmlDocument doc)
