@@ -12,11 +12,12 @@ namespace SpanishScraper
         private HtmlWeb webClient;
         private HtmlDocument doc;
         private bool canceled = false;
+        private int waitingTime = 1500;
         public Form1()
         {
             var socketsHttpHandler = new SocketsHttpHandler()
             {
-                MaxConnectionsPerServer = 10
+                MaxConnectionsPerServer = 5
             };
             httpClient = new HttpClient(socketsHttpHandler);
             webClient = new HtmlWeb();
@@ -67,9 +68,11 @@ namespace SpanishScraper
             {
                 foreach (var chapter in chapters.Reverse())
                 {
-                    addLog("Downloading chapter " + chapter.Key);
+                    
                     currentFolder = Path.Combine(mainFolder, ReplaceInvalidChars(chapter.Key));
+                    if (Directory.Exists(currentFolder)) { addLog("Skipping chapter - folder already exists."); continue; }
                     Directory.CreateDirectory(currentFolder);
+                    addLog("Downloading chapter " + chapter.Key);
                     foreach (var uploadedChapter in chapter.Value)
                     {
                         if (listBox_Scannies.CheckedItems.Contains(uploadedChapter.GroupName))
@@ -78,12 +81,10 @@ namespace SpanishScraper
                             await DownloadChapter(uploadedChapter.ChapterLink, Path.Combine(currentFolder, ReplaceInvalidChars(uploadedChapter.GroupName)));
                             addLog("Done.");
                         }
-                        if (canceled)
-                        {
-                            throw new TaskCanceledException();
-                        }
                     }
                     addLog("Done downloading chapter " + chapter.Key);
+                    addLog("Waiting " + waitingTime + " ms ...");
+                    await Task.Delay(waitingTime);
                 }
 
             }
@@ -94,7 +95,7 @@ namespace SpanishScraper
             catch(Exception exc)
             {
                 addLog(exc.Message);
-                addLog("Something went wrong.");
+                addLog("Something went wrong. Probably going too fast.");
             }
             finally
             {
@@ -130,9 +131,14 @@ namespace SpanishScraper
                 addLog("Skipping file '" + filename + "' - already exists.");
                 return;
             }
-            using (var fs = new FileStream(path, FileMode.CreateNew))
+
+            using (var s = await httpClient.GetStreamAsync(uri))
             {
-                using (var s = await httpClient.GetStreamAsync(uri))
+                if (canceled)
+                {
+                    throw new TaskCanceledException();
+                }
+                using (var fs = new FileStream(path, FileMode.CreateNew))
                 {
                     addLog("Downloading file " + filename + " ...");
                     await s.CopyToAsync(fs);
@@ -204,6 +210,11 @@ namespace SpanishScraper
         private string ReplaceInvalidChars(string filename)
         {
             return string.Join("_", filename.Split(Path.GetInvalidFileNameChars()));
+        }
+
+        private void txtBox_Delay_TextChanged(object sender, EventArgs e)
+        {
+            waitingTime = int.TryParse(txtBox_Delay.Text, out waitingTime) ? waitingTime : 1500;
         }
     }
 }

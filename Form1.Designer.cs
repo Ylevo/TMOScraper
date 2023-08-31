@@ -40,6 +40,8 @@
             this.listbox_logger = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btn_stop = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.txtBox_Delay = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // btn_download
@@ -147,11 +149,31 @@
             this.btn_stop.UseVisualStyleBackColor = true;
             this.btn_stop.Click += new System.EventHandler(this.btn_stop_Click);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(23, 299);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(42, 15);
+            this.label2.TabIndex = 13;
+            this.label2.Text = "Delay :";
+            // 
+            // txtBox_Delay
+            // 
+            this.txtBox_Delay.Location = new System.Drawing.Point(71, 296);
+            this.txtBox_Delay.Name = "txtBox_Delay";
+            this.txtBox_Delay.Size = new System.Drawing.Size(62, 23);
+            this.txtBox_Delay.TabIndex = 14;
+            this.txtBox_Delay.Text = "1500";
+            this.txtBox_Delay.TextChanged += new System.EventHandler(this.txtBox_Delay_TextChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(557, 394);
+            this.Controls.Add(this.txtBox_Delay);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.btn_stop);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.listbox_logger);
@@ -186,5 +208,7 @@
         private ListBox listbox_logger;
         private Label label1;
         private Button btn_stop;
+        private Label label2;
+        private TextBox txtBox_Delay;
     }
 }
