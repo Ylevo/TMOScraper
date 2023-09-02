@@ -79,6 +79,7 @@ namespace SpanishScraper
                         {
                             throw new TaskCanceledException();
                         }
+
                         if (listBox_Scannies.CheckedItems.Contains(uploadedChapter.GroupName))
                         {
                             addLog("Downloading chapter by '" + uploadedChapter.GroupName + "'");
@@ -137,18 +138,19 @@ namespace SpanishScraper
                 return;
             }
 
-            var s = await httpClient.GetStreamAsync(uri);
-            
-            if (canceled)
+            using (var s = await httpClient.GetStreamAsync(uri))
             {
-                throw new TaskCanceledException();
-            }
-            using (var fs = new FileStream(path, FileMode.CreateNew))
-            {
-                addLog("Downloading file " + filename + " ...");
-                await s.CopyToAsync(fs);
-            }
+                if (canceled)
+                {
+                    throw new TaskCanceledException();
+                }
 
+                using (var fs = new FileStream(path, FileMode.CreateNew))
+                {
+                    addLog("Downloading file " + filename + " ...");
+                    await s.CopyToAsync(fs);
+                }
+            }
         }
 
         private void ListScantardsGroups(HtmlDocument doc)
