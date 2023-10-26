@@ -16,9 +16,20 @@ namespace SpanishScraper
         private bool canceled = false;
         private int waitingTimeBetweenChapters = 1500;
         private int waitingTimeBetweenReloads = 500;
-        private string folderNameTemplate = "{0} [spa] - c{1} [{2}]";
+        private string folderNameTemplate = "{0} [{1}] - c{2} [{3}]";
+        private Dictionary<string, string> langDict = new Dictionary<string, string>()
+        {
+            {"Spanish ","es" },
+            {"Spanish (LATAM) ","es-la" }
+        };
         public Form1()
         {
+            InitializeComponent();
+            languageCmbBox.DataSource = new BindingSource(langDict, null);
+            languageCmbBox.DisplayMember = "Key";
+            languageCmbBox.ValueMember = "Value";
+            txtBox_setFolder.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
             var socketsHttpHandler = new SocketsHttpHandler()
             {
                 MaxConnectionsPerServer = 5
@@ -33,8 +44,6 @@ namespace SpanishScraper
             httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0");
             httpClient.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
             httpClient.DefaultRequestHeaders.Add("Referer", "https://visortmo.com/");
-            InitializeComponent();
-            txtBox_setFolder.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
         }
 
@@ -64,11 +73,12 @@ namespace SpanishScraper
                 MessageBox.Show("You need to scan the scannies first to select your favourite autists.", "Scannies Alert", MessageBoxButtons.YesNo, MessageBoxIcon.Hand);
                 return;
             }
-            toggleButtonsAndShit();
+            ToggleButtonsAndShit();
             doc = webClient.Load(txtBox_mangoUrl.Text);
             Dictionary<string, (string GroupName, string ChapterLink)[]> chapters = GetChaptersLinks(doc);
             string mainFolder = txtBox_setFolder.Text,
                 mangaTitle = ReplaceInvalidChars(txtBox_mangoUrl.Text.Split('/').Last()).Truncate(20),
+                language = languageCmbBox.SelectedValue.ToString(),
                 currentFolder;
             bool actuallyDidSomething = false;
             if (checkBox_MangoSubfolder.Checked)
@@ -80,7 +90,7 @@ namespace SpanishScraper
             {
                 foreach (var chapter in chapters.Reverse())
                 {
-                    addLog("Checking chapter " + chapter.Key);
+                    AddLog("Checking chapter " + chapter.Key);
                     foreach (var uploadedChapter in chapter.Value)
                     {
                         if (canceled)
@@ -92,23 +102,24 @@ namespace SpanishScraper
 
                         if (listBox_Scannies.CheckedItems.Contains(uploadedChapter.GroupName))
                         {
-                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangaTitle, chapter.Key.PadLeft(3, '0'), uploadedChapter.GroupName));
+                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangaTitle, language, chapter.Key.PadLeft(3, '0'), uploadedChapter.GroupName));
+
                             if (Directory.Exists(currentFolder))
                             {
-                                addLog("Skipping chapter " + chapter.Key + " by '" + uploadedChapter.GroupName + "'. Folder already exists.");
+                                AddLog("Skipping chapter " + chapter.Key + " by '" + uploadedChapter.GroupName + "'. Folder already exists.");
                                 continue;
                             }
                             Directory.CreateDirectory(currentFolder);
-                            addLog("Downloading chapter " + chapter.Key + " by '" + uploadedChapter.GroupName + "'");
+                            AddLog("Downloading chapter " + chapter.Key + " by '" + uploadedChapter.GroupName + "'");
                             await DownloadChapter(uploadedChapter.ChapterLink, currentFolder);
-                            addLog("Done downloading chapter " + chapter.Key + " by '" + uploadedChapter.GroupName + "'");
+                            AddLog("Done downloading chapter " + chapter.Key + " by '" + uploadedChapter.GroupName + "'");
                             actuallyDidSomething = true;
                         }
                     }
 
                     if (actuallyDidSomething)
                     {
-                        addLog("Waiting " + waitingTimeBetweenChapters + " ms ...");
+                        AddLog("Waiting " + waitingTimeBetweenChapters + " ms ...");
                         await Task.Delay(waitingTimeBetweenChapters);
                     }
                 }
@@ -116,16 +127,16 @@ namespace SpanishScraper
             }
             catch(TaskCanceledException)
             {
-                addLog("Stopped download.");
+                AddLog("Stopped download.");
             }
             catch(Exception exc)
             {
-                addLog(exc.Message);
-                addLog("Something went wrong. Probably going too fast.");
+                AddLog(exc.Message);
+                AddLog("Something went wrong. Probably going too fast.");
             }
             finally
             {
-                toggleButtonsAndShit();
+                ToggleButtonsAndShit();
             }
         }
 
@@ -135,7 +146,7 @@ namespace SpanishScraper
 
             while(doc.DocumentNode.SelectSingleNode("//div[contains(concat(' ',normalize-space(@class),' '),' viewer-container ')]") == null)
             {
-                await waitBeforePageReload();
+                await WaitBeforePageReload();
                 doc = webClient.Load(chapterLink);
             }
 
@@ -146,7 +157,7 @@ namespace SpanishScraper
 
                 while (doc.DocumentNode.SelectSingleNode("//div[contains(concat(' ',normalize-space(@class),' '),' viewer-container ')]") == null)
                 {
-                    await waitBeforePageReload();
+                    await WaitBeforePageReload();
                     doc = webClient.Load(cascadeUrl);
                 }
             }
@@ -176,7 +187,7 @@ namespace SpanishScraper
 
                 using (var fs = new FileStream(path, FileMode.CreateNew))
                 {
-                    addLog("Downloading file " + filename + " ...");
+                    AddLog("Downloading file " + filename + " ...");
                     await s.CopyToAsync(fs);
                 }
             }
@@ -223,18 +234,18 @@ namespace SpanishScraper
             return chapters;
         }
 
-        private async Task waitBeforePageReload()
+        private async Task WaitBeforePageReload()
         {
             if (canceled)
             {
                 throw new TaskCanceledException();
             }
-            addLog("Chapter page loading failed. Retrying in " + waitingTimeBetweenReloads + " ms ...");
+            AddLog("Chapter page loading failed. Retrying in " + waitingTimeBetweenReloads + " ms ...");
             await Task.Delay(waitingTimeBetweenReloads);
             waitingTimeBetweenReloads = waitingTimeBetweenReloads + random.Next(75, 150);
         }
 
-        private void toggleButtonsAndShit()
+        private void ToggleButtonsAndShit()
         {
             btn_setFolder.Enabled = !btn_setFolder.Enabled;
             listBox_Scannies.Enabled = !listBox_Scannies.Enabled;
@@ -245,7 +256,7 @@ namespace SpanishScraper
 
         }
 
-        private void addLog(string message)
+        private void AddLog(string message)
         {
             listbox_logger.Items.Insert(0, message);
         }
@@ -269,7 +280,6 @@ namespace SpanishScraper
         {
             listBox_Scannies.Visible = false;
         }
-
     }
 
     public static class StringExt
