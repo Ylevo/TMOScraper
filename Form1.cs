@@ -68,7 +68,7 @@ namespace SpanishScraper
             doc = webClient.Load(txtBox_mangoUrl.Text);
             Dictionary<string, (string GroupName, string ChapterLink)[]> chapters = GetChaptersLinks(doc);
             string mainFolder = txtBox_setFolder.Text,
-                mangaTitle = ReplaceInvalidChars(String.Join('-', txtBox_mangoUrl.Text.Split('/').Last().Split('-'), 0, 3)),
+                mangaTitle = ReplaceInvalidChars(txtBox_mangoUrl.Text.Split('/').Last()).Truncate(20),
                 currentFolder;
             bool actuallyDidSomething = false;
             if (checkBox_MangoSubfolder.Checked)
@@ -207,7 +207,7 @@ namespace SpanishScraper
             for (int i = 0; i < chaptersNodes.Count; ++i)
             {
                 chapterNumber = chaptersNodes[i].Descendants("a").First().InnerText.Trim().Substring(9);
-                chapterNumber = chapterNumber.Substring(0, chapterNumber.IndexOf("."));
+                chapterNumber = chapterNumber.Substring(0, chapterNumber[chapterNumber.IndexOf(".")+1] == '0' ? chapterNumber.IndexOf(".") : (chapterNumber.IndexOf(".")+2));
                 uploadedChaptersNodes = chaptersNodes[i].Descendants("li");
                 (string, string)[] uploadedChapters = new (string, string)[uploadedChaptersNodes.Count()];
                 
@@ -268,6 +268,16 @@ namespace SpanishScraper
         private void txtBox_mangoUrl_TextChanged(object sender, EventArgs e)
         {
             listBox_Scannies.Visible = false;
+        }
+
+    }
+
+    public static class StringExt
+    {
+        public static string Truncate(this string value, int maxLength)
+        {
+            if (string.IsNullOrEmpty(value)) return value;
+            return value.Length <= maxLength ? value : value.Substring(0, maxLength);
         }
     }
 }
