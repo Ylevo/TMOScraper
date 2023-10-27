@@ -12,12 +12,13 @@ namespace SpanishScraper
         private HttpClient httpClient;
         private HtmlWeb webClient;
         private HtmlDocument doc;
-        private Random random = new Random();
+        private Random random = new();
         private bool canceled = false;
-        private int waitingTimeBetweenChapters = 1500;
-        private int waitingTimeBetweenReloads = 500;
-        private string folderNameTemplate = "{0} [{1}] - c{2} [{3}]";
-        private Dictionary<string, string> langDict = new Dictionary<string, string>()
+        private int waitingTimeBetweenChapters = 2500;
+        private const int defaultWaitingTimeBetweenReloads = 1200;
+        private int waitingTimeBetweenReloads = defaultWaitingTimeBetweenReloads;
+        private readonly string folderNameTemplate = "{0} [{1}] - c{2} [{3}]";
+        private readonly Dictionary<string, string> langDict = new()
         {
             {"Spanish ","es" },
             {"Spanish (LATAM) ","es-la" }
@@ -143,7 +144,8 @@ namespace SpanishScraper
         }
 
         private async Task DownloadChapter(string chapterLink, string folderPath)
-        {doc = webClient.Load(chapterLink);
+        {
+            doc = webClient.Load(chapterLink);
 
             while(doc.DocumentNode.SelectSingleNode("//div[contains(concat(' ',normalize-space(@class),' '),' viewer-container ')]") == null)
             {
@@ -163,7 +165,7 @@ namespace SpanishScraper
                 }
             }
 
-            waitingTimeBetweenReloads = 500;
+            waitingTimeBetweenReloads = defaultWaitingTimeBetweenReloads;
 
             var imgUrls = doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]");
             string url, filename;
@@ -196,7 +198,7 @@ namespace SpanishScraper
 
         private void ListScantardsGroups(HtmlDocument doc)
         {
-            List<string> scanGroups = new List<string>();
+            List<string> scanGroups = new();
             var scanGroupsNodes = doc.DocumentNode.SelectNodes(@"//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]
                                                                     //a[contains(@href, '/groups/')]");
             foreach (var scanGroupNode in scanGroupsNodes)
@@ -212,7 +214,7 @@ namespace SpanishScraper
 
         private Dictionary<string, (string, string)[]> GetChaptersLinks(HtmlDocument doc)
         {
-            Dictionary<string, (string, string)[]> chapters = new Dictionary<string, (string, string)[]>();
+            Dictionary<string, (string, string)[]> chapters = new();
             var chaptersNodes = doc.DocumentNode.SelectNodes("//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]");
             IEnumerable<HtmlNode> uploadedChaptersNodes;
             string chapterNumber, uploadedChapterLink, groupName;
@@ -252,7 +254,7 @@ namespace SpanishScraper
             }
             AddLog("Chapter page loading failed. Retrying in " + waitingTimeBetweenReloads + " ms ...");
             await Task.Delay(waitingTimeBetweenReloads);
-            waitingTimeBetweenReloads = waitingTimeBetweenReloads + random.Next(75, 150);
+            waitingTimeBetweenReloads = waitingTimeBetweenReloads + random.Next(120, 200);
         }
 
         private void ToggleButtonsAndShit()
@@ -262,6 +264,7 @@ namespace SpanishScraper
             btn_scan.Enabled = !btn_scan.Enabled;
             btn_download.Enabled = !btn_download.Enabled;
             btn_stop.Enabled = !btn_stop.Enabled;
+            waitingTimeBetweenChapters = defaultWaitingTimeBetweenReloads;
             canceled = false;
 
         }
@@ -283,7 +286,7 @@ namespace SpanishScraper
 
         private void txtBox_Delay_TextChanged(object sender, EventArgs e)
         {
-            waitingTimeBetweenChapters = int.TryParse(txtBox_Delay.Text, out waitingTimeBetweenChapters) ? waitingTimeBetweenChapters : 1500;
+            waitingTimeBetweenChapters = int.TryParse(txtBox_Delay.Text, out waitingTimeBetweenChapters) ? waitingTimeBetweenChapters : 2500;
         }
 
         private void txtBox_mangoUrl_TextChanged(object sender, EventArgs e)

@@ -167,7 +167,7 @@
             this.txtBox_Delay.Name = "txtBox_Delay";
             this.txtBox_Delay.Size = new System.Drawing.Size(62, 23);
             this.txtBox_Delay.TabIndex = 14;
-            this.txtBox_Delay.Text = "1500";
+            this.txtBox_Delay.Text = "2500";
             this.txtBox_Delay.TextChanged += new System.EventHandler(this.txtBox_Delay_TextChanged);
             // 
             // languageLabel
