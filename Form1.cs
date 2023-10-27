@@ -264,7 +264,7 @@ namespace SpanishScraper
             btn_scan.Enabled = !btn_scan.Enabled;
             btn_download.Enabled = !btn_download.Enabled;
             btn_stop.Enabled = !btn_stop.Enabled;
-            waitingTimeBetweenChapters = defaultWaitingTimeBetweenReloads;
+            waitingTimeBetweenReloads = defaultWaitingTimeBetweenReloads;
             canceled = false;
 
         }
