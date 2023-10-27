@@ -191,7 +191,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(557, 456);
+            this.ClientSize = new System.Drawing.Size(557, 430);
             this.Controls.Add(this.languageCmbBox);
             this.Controls.Add(this.languageLabel);
             this.Controls.Add(this.txtBox_Delay);

@@ -79,6 +79,7 @@ namespace SpanishScraper
             string mainFolder = txtBox_setFolder.Text,
                 mangaTitle = ReplaceInvalidChars(txtBox_mangoUrl.Text.Split('/').Last()).Truncate(20),
                 language = languageCmbBox.SelectedValue.ToString(),
+                chapterNumber,
                 currentFolder;
             bool actuallyDidSomething = false;
             if (checkBox_MangoSubfolder.Checked)
@@ -102,7 +103,8 @@ namespace SpanishScraper
 
                         if (listBox_Scannies.CheckedItems.Contains(uploadedChapter.GroupName))
                         {
-                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangaTitle, language, chapter.Key.PadLeft(3, '0'), uploadedChapter.GroupName));
+                            chapterNumber = chapter.Key.Contains('.') ? chapter.Key.PadLeft(6, '0') : chapter.Key.PadLeft(3, '0');
+                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangaTitle, language, chapterNumber, uploadedChapter.GroupName));
 
                             if (Directory.Exists(currentFolder))
                             {
@@ -141,8 +143,7 @@ namespace SpanishScraper
         }
 
         private async Task DownloadChapter(string chapterLink, string folderPath)
-        {
-            doc = webClient.Load(chapterLink);
+        {doc = webClient.Load(chapterLink);
 
             while(doc.DocumentNode.SelectSingleNode("//div[contains(concat(' ',normalize-space(@class),' '),' viewer-container ')]") == null)
             {
@@ -218,7 +219,16 @@ namespace SpanishScraper
             for (int i = 0; i < chaptersNodes.Count; ++i)
             {
                 chapterNumber = chaptersNodes[i].Descendants("a").First().InnerText.Trim().Substring(9);
-                chapterNumber = chapterNumber.Substring(0, chapterNumber[chapterNumber.IndexOf(".")+1] == '0' ? chapterNumber.IndexOf(".") : (chapterNumber.IndexOf(".")+2));
+
+                if (int.Parse(chapterNumber.Substring(chapterNumber.IndexOf(".") + 1, 2)) > 0)
+                {
+                    chapterNumber = chapterNumber.Substring(0, chapterNumber.IndexOf(".") + 3);
+                }
+                else
+                {
+                    chapterNumber = chapterNumber.Substring(0, chapterNumber.IndexOf("."));
+                }
+
                 uploadedChaptersNodes = chaptersNodes[i].Descendants("li");
                 (string, string)[] uploadedChapters = new (string, string)[uploadedChaptersNodes.Count()];
                 
