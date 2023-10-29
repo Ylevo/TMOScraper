@@ -1,6 +1,8 @@
 using HtmlAgilityPack;
+using PuppeteerSharp;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml.XPath;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
@@ -11,13 +13,15 @@ namespace SpanishScraper
     {
         private HttpClient httpClient;
         private HtmlWeb webClient;
-        private HtmlDocument doc;
+        private IBrowser? browser;
+        private readonly NavigationOptions navigationOptionsDefault = new NavigationOptions { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded } };
+        private readonly NavigationOptions navigationOptionsRedirect = new NavigationOptions { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle2 } };
+        private HtmlDocument doc = new HtmlDocument();
         private Random random = new();
         private bool canceled = false;
-        private int waitingTimeBetweenChapters = 2500;
-        private const int defaultWaitingTimeBetweenReloads = 1200;
-        private int waitingTimeBetweenReloads = defaultWaitingTimeBetweenReloads;
-        private readonly string folderNameTemplate = "{0} [{1}] - c{2} [{3}]";
+        private int waitingTimeBetweenChapters = 2000;
+        private const string domainName = "https://visortmo.com";
+        private const string folderNameTemplate = "{0} [{1}] - c{2} [{3}]";
         private readonly Dictionary<string, string> langDict = new()
         {
             {"Spanish ","es" },
@@ -26,6 +30,16 @@ namespace SpanishScraper
         public Form1()
         {
             InitializeComponent();
+
+            AddLog("Downloading Chromium ...");
+            var progress = new Progress<bool>(value =>
+            {
+                AddLog("Done downloading Chromium.");
+                btn_download.Enabled = value;
+                btn_scan.Enabled = value;
+            });
+            Task.Run(async () => await InitializePuppeteer(progress));
+
             languageCmbBox.DataSource = new BindingSource(langDict, null);
             languageCmbBox.DisplayMember = "Key";
             languageCmbBox.ValueMember = "Value";
@@ -39,13 +53,19 @@ namespace SpanishScraper
             webClient = new HtmlWeb();
             webClient.PreRequest += delegate (HttpWebRequest req)
             {
-                req.Referer = "https://visortmo.com/";
+                req.Referer = domainName;
                 return true;
             };
             httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0");
             httpClient.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
-            httpClient.DefaultRequestHeaders.Add("Referer", "https://visortmo.com/");
+            httpClient.DefaultRequestHeaders.Add("Referer", domainName);
+        }
 
+        private async Task InitializePuppeteer(IProgress<bool> progress)
+        {
+            await new BrowserFetcher().DownloadAsync();
+            browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+            progress.Report(true);
         }
 
         private void Btn_setFolder_Click(object sender, EventArgs e)
@@ -145,27 +165,7 @@ namespace SpanishScraper
 
         private async Task DownloadChapter(string chapterLink, string folderPath)
         {
-            doc = webClient.Load(chapterLink);
-
-            while(doc.DocumentNode.SelectSingleNode("//div[contains(concat(' ',normalize-space(@class),' '),' viewer-container ')]") == null)
-            {
-                await WaitBeforePageReload();
-                doc = webClient.Load(chapterLink);
-            }
-
-            if (webClient.ResponseUri.ToString().Split('/').Last() != "cascade")
-            {
-                string cascadeUrl = doc.DocumentNode.SelectSingleNode("//a[contains(@href, 'cascade')]").Attributes["href"].Value;
-                doc = webClient.Load(cascadeUrl);
-
-                while (doc.DocumentNode.SelectSingleNode("//div[contains(concat(' ',normalize-space(@class),' '),' viewer-container ')]") == null)
-                {
-                    await WaitBeforePageReload();
-                    doc = webClient.Load(cascadeUrl);
-                }
-            }
-
-            waitingTimeBetweenReloads = defaultWaitingTimeBetweenReloads;
+            await GetChapterPage(chapterLink);
 
             var imgUrls = doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]");
             string url, filename;
@@ -177,6 +177,60 @@ namespace SpanishScraper
                 tasks.Add(DownloadFile(new Uri(url), Path.Combine(folderPath, filename), filename));
             }
             await Task.WhenAll(tasks);
+        }
+
+        private async Task GetChapterPage(string chapterLink)
+        {
+            using (var page = await browser.NewPageAsync())
+            {
+                await page.SetExtraHttpHeadersAsync(new Dictionary<string, string> { { "Referer", domainName } });
+                await page.SetJavaScriptEnabledAsync(true);
+                await page.SetRequestInterceptionAsync(true);
+
+                page.Request += (sender, e) =>
+                {
+                    switch(e.Request.ResourceType)
+                    {
+                        case ResourceType.Image:
+                        case ResourceType.Img:
+                        case ResourceType.StyleSheet:
+                            e.Request.AbortAsync();
+                            break;
+                        case ResourceType.Script:
+                            if (!page.Url.Contains("/view_uploads/"))
+                            {
+                                e.Request.AbortAsync();
+                            }
+                            else
+                            {
+                                e.Request.ContinueAsync();
+                            }
+                            break;
+                        default:
+                            e.Request.ContinueAsync();
+                            break;
+                    }
+                };
+
+                await NavigateToChapterPage(chapterLink, page);
+                doc.LoadHtml(await page.GetContentAsync());
+            }
+        }
+
+        private async Task NavigateToChapterPage(string chapterLink, IPage page)
+        {
+            await page.GoToAsync(chapterLink, navigationOptionsDefault);
+            if (page.Url.Contains("/view_uploads/"))
+            {
+                await page.WaitForNavigationAsync(navigationOptionsRedirect);
+            }
+
+            if (!page.Url.Contains(domainName + "/viewer/") || !page.Url.Contains("/cascade"))
+            {
+                chapterLink = page.Url.Replace("paginated", "cascade");
+                chapterLink = Regex.Replace(chapterLink, "https.+/news/", domainName + "/viewer/");
+                await NavigateToChapterPage(chapterLink, page);
+            }
         }
 
         private async Task DownloadFile(Uri uri, string path, string filename)
@@ -246,17 +300,6 @@ namespace SpanishScraper
             return chapters;
         }
 
-        private async Task WaitBeforePageReload()
-        {
-            if (canceled)
-            {
-                throw new TaskCanceledException();
-            }
-            AddLog("Chapter page loading failed. Retrying in " + waitingTimeBetweenReloads + " ms ...");
-            await Task.Delay(waitingTimeBetweenReloads);
-            waitingTimeBetweenReloads = waitingTimeBetweenReloads + random.Next(120, 200);
-        }
-
         private void ToggleButtonsAndShit()
         {
             btn_setFolder.Enabled = !btn_setFolder.Enabled;
@@ -264,7 +307,6 @@ namespace SpanishScraper
             btn_scan.Enabled = !btn_scan.Enabled;
             btn_download.Enabled = !btn_download.Enabled;
             btn_stop.Enabled = !btn_stop.Enabled;
-            waitingTimeBetweenReloads = defaultWaitingTimeBetweenReloads;
             canceled = false;
 
         }
@@ -286,12 +328,31 @@ namespace SpanishScraper
 
         private void txtBox_Delay_TextChanged(object sender, EventArgs e)
         {
-            waitingTimeBetweenChapters = int.TryParse(txtBox_Delay.Text, out waitingTimeBetweenChapters) ? waitingTimeBetweenChapters : 2500;
+            waitingTimeBetweenChapters = int.TryParse(txtBox_Delay.Text, out waitingTimeBetweenChapters) ? waitingTimeBetweenChapters : 2000;
         }
 
         private void txtBox_mangoUrl_TextChanged(object sender, EventArgs e)
         {
             listBox_Scannies.Visible = false;
+        }
+
+        private async void button1_Click(object sender, EventArgs e)
+        {
+            await GetChapterPage("https://visortmo.com/view_uploads/165301");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (components != null)
+                {
+                    components.Dispose();
+                }
+
+                browser?.CloseAsync();
+            }
+            base.Dispose(disposing);
         }
     }
 

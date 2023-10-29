@@ -11,14 +11,7 @@
         ///  Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
+       
 
         #region Windows Form Designer generated code
 
@@ -42,12 +35,13 @@
             this.btn_stop = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.txtBox_Delay = new System.Windows.Forms.TextBox();
-            this.languageLabel = new System.Windows.Forms.Label();
+            this.lbl_language = new System.Windows.Forms.Label();
             this.languageCmbBox = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // btn_download
             // 
+            this.btn_download.Enabled = false;
             this.btn_download.Location = new System.Drawing.Point(21, 249);
             this.btn_download.Name = "btn_download";
             this.btn_download.Size = new System.Drawing.Size(119, 23);
@@ -93,6 +87,7 @@
             // 
             // btn_scan
             // 
+            this.btn_scan.Enabled = false;
             this.btn_scan.Location = new System.Drawing.Point(21, 153);
             this.btn_scan.Name = "btn_scan";
             this.btn_scan.Size = new System.Drawing.Size(121, 23);
@@ -170,14 +165,14 @@
             this.txtBox_Delay.Text = "2500";
             this.txtBox_Delay.TextChanged += new System.EventHandler(this.txtBox_Delay_TextChanged);
             // 
-            // languageLabel
+            // lbl_language
             // 
-            this.languageLabel.AutoSize = true;
-            this.languageLabel.Location = new System.Drawing.Point(21, 97);
-            this.languageLabel.Name = "languageLabel";
-            this.languageLabel.Size = new System.Drawing.Size(65, 15);
-            this.languageLabel.TabIndex = 15;
-            this.languageLabel.Text = "Language :";
+            this.lbl_language.AutoSize = true;
+            this.lbl_language.Location = new System.Drawing.Point(21, 97);
+            this.lbl_language.Name = "lbl_language";
+            this.lbl_language.Size = new System.Drawing.Size(65, 15);
+            this.lbl_language.TabIndex = 15;
+            this.lbl_language.Text = "Language :";
             // 
             // languageCmbBox
             // 
@@ -193,7 +188,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(557, 430);
             this.Controls.Add(this.languageCmbBox);
-            this.Controls.Add(this.languageLabel);
+            this.Controls.Add(this.lbl_language);
             this.Controls.Add(this.txtBox_Delay);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.btn_stop);
@@ -232,7 +227,7 @@
         private Button btn_stop;
         private Label label2;
         private TextBox txtBox_Delay;
-        private Label languageLabel;
+        private Label lbl_language;
         private ComboBox languageCmbBox;
     }
 }
