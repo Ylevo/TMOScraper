@@ -1,5 +1,6 @@
 using HtmlAgilityPack;
 using PuppeteerSharp;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -12,15 +13,15 @@ namespace SpanishScraper
 {
     public partial class Form1 : Form
     {
-        private HttpClient httpClient;
-        private HtmlWeb webClient;
+        private readonly HttpClient httpClient;
+        private readonly HtmlWeb webClient;
         private IBrowser? browser;
         private IResponse? lastResponse;
-        private readonly NavigationOptions navigationOptionsDefault = new NavigationOptions { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 6000 };
-        private readonly NavigationOptions navigationOptionsRedirect = new NavigationOptions { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle2 }, Timeout = 5000 };
-        private HtmlDocument doc = new HtmlDocument();
-        private Random random = new();
-        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
+        private readonly NavigationOptions navigationOptionsDefault = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 6000 };
+        private readonly NavigationOptions navigationOptionsRedirect = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle2 }, Timeout = 5000 };
+        private HtmlDocument doc = new();
+        private readonly Random random = new();
+        private CancellationTokenSource cancellationToken = new();
         private int waitingTimeBetweenChapters = 3000;
         private const string domainName = "https://visortmo.com";
         private const string folderNameTemplate = "{0} [{1}] - c{2} [{3}]";
@@ -57,7 +58,6 @@ namespace SpanishScraper
                 req.Referer = domainName;
                 return true;
             };
-            
         }
 
         private async Task InitializePuppeteer(IProgress<bool> progress)
@@ -124,8 +124,7 @@ namespace SpanishScraper
 
                         if (listBox_Scannies.CheckedItems.Contains(uploadedChapter.GroupName))
                         {
-                            chapterNumber = chapter.Key.Contains('.') ? chapter.Key.PadLeft(6, '0') : chapter.Key.PadLeft(3, '0');
-                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangaTitle, language, chapterNumber, uploadedChapter.GroupName));
+                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangaTitle, language, chapter.Key, uploadedChapter.GroupName));
 
                             if (Directory.Exists(currentFolder))
                             {
@@ -326,14 +325,7 @@ namespace SpanishScraper
             {
                 chapterNumber = chaptersNodes[i].Descendants("a").First().InnerText.Trim().Substring(9);
 
-                if (int.Parse(chapterNumber.Substring(chapterNumber.IndexOf(".") + 1, 2)) > 0)
-                {
-                    chapterNumber = chapterNumber.Substring(0, chapterNumber.IndexOf(".") + 3);
-                }
-                else
-                {
-                    chapterNumber = chapterNumber.Substring(0, chapterNumber.IndexOf("."));
-                }
+                chapterNumber = ParseAndPadChapterNumber(chapterNumber);
 
                 uploadedChaptersNodes = chaptersNodes[i].Descendants("li");
                 (string, string)[] uploadedChapters = new (string, string)[uploadedChaptersNodes.Count()];
@@ -344,10 +336,43 @@ namespace SpanishScraper
                     groupName = String.Join('+', uploadedChaptersNodes.ElementAt(x).Descendants("a").First().ParentNode.InnerText.Split(',', StringSplitOptions.TrimEntries));
                     uploadedChapters[x] = (groupName, uploadedChapterLink);
                 }
-                chapters.Add(chapterNumber, uploadedChapters);
+
+                if (chapters.ContainsKey(chapterNumber))
+                {
+                    chapters[chapterNumber] = chapters[chapterNumber].Concat(uploadedChapters).ToArray();
+                }
+                else
+                {
+                    chapters.Add(chapterNumber, uploadedChapters);
+                }
             }
 
             return chapters;
+        }
+
+        private string ParseAndPadChapterNumber(string chapterNumber)
+        {
+            chapterNumber = chapterNumber.Substring(0, chapterNumber.IndexOf('.') + 3).Trim();
+            string split = chapterNumber.Split('.').Last();
+
+            if (int.Parse(split) > 0)
+            {
+                if (split.Contains('0'))
+                {
+                    split = split.Replace("0", "");
+                    chapterNumber = (chapterNumber.Remove(chapterNumber.IndexOf(".")+1) + split).PadLeft(5, '0');
+                }
+                else
+                {
+                    chapterNumber = chapterNumber.PadLeft(6, '0');
+                }
+            }
+            else
+            {
+                chapterNumber = chapterNumber.Substring(0, chapterNumber.IndexOf(".")).PadLeft(3, '0');
+            }
+
+            return chapterNumber;
         }
 
         private void ToggleButtonsAndShit()
