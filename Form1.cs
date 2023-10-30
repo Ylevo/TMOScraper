@@ -234,6 +234,7 @@ namespace SpanishScraper
                     }
                     catch(Exception ex) when (ex is not TaskCanceledException && ex is not OperationCanceledException)
                     {
+                        AddLog(ex.Message);
                         AddLog("Fetching chapter page failed. Retrying ...");
                     }
                 }
