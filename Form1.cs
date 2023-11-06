@@ -447,6 +447,8 @@ namespace SpanishScraper
 
             while (!goodToGo)
             {
+                cancellationToken.Token.ThrowIfCancellationRequested();
+
                 doc = webClient.Load(url);
                 titleText = doc.DocumentNode.SelectSingleNode("//title").InnerHtml;
 
