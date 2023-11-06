@@ -87,8 +87,29 @@ namespace SpanishScraper
                 MessageBox.Show("Retard.", "Retard Alert", MessageBoxButtons.YesNo, MessageBoxIcon.Hand);
                 return;
             }
-            await GetPage(txtBox_mangoUrl.Text);
-            ListScantardsGroups(doc);
+
+            try
+            {
+                cancellationToken = new CancellationTokenSource();
+                ToggleButtonsAndShit();
+
+                await GetPage(txtBox_mangoUrl.Text);
+                ListScantardsGroups(doc);
+            }
+            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
+            {
+                AddLog("Cancelled scanning.");
+            }
+            catch (Exception exc)
+            {
+                AddLog(exc.Message);
+                AddLog("Something went wrong.");
+                cancellationToken.Cancel();
+            }
+            finally
+            {
+                ToggleButtonsAndShit();
+            }
         }
         
         private async void Btn_download_Click(object sender, EventArgs e)
