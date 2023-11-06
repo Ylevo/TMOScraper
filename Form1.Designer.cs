@@ -37,6 +37,15 @@
             this.txtBox_Delay = new System.Windows.Forms.TextBox();
             this.lbl_language = new System.Windows.Forms.Label();
             this.languageCmbBox = new System.Windows.Forms.ComboBox();
+            this.checkBox_chaptersRange = new System.Windows.Forms.CheckBox();
+            this.numeric_chaptersRangeFrom = new System.Windows.Forms.NumericUpDown();
+            this.lbl_chaptersRangeTo = new System.Windows.Forms.Label();
+            this.numeric_chaptersRangeTo = new System.Windows.Forms.NumericUpDown();
+            this.checkBox_skipMangos = new System.Windows.Forms.CheckBox();
+            this.numeric_skipMangos = new System.Windows.Forms.NumericUpDown();
+            ((System.ComponentModel.ISupportInitialize)(this.numeric_chaptersRangeFrom)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numeric_chaptersRangeTo)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numeric_skipMangos)).BeginInit();
             this.SuspendLayout();
             // 
             // btn_download
@@ -110,7 +119,7 @@
             this.checkBox_MangoSubfolder.AutoSize = true;
             this.checkBox_MangoSubfolder.Checked = true;
             this.checkBox_MangoSubfolder.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_MangoSubfolder.Location = new System.Drawing.Point(23, 123);
+            this.checkBox_MangoSubfolder.Location = new System.Drawing.Point(391, 98);
             this.checkBox_MangoSubfolder.Name = "checkBox_MangoSubfolder";
             this.checkBox_MangoSubfolder.Size = new System.Drawing.Size(154, 19);
             this.checkBox_MangoSubfolder.TabIndex = 9;
@@ -182,11 +191,114 @@
             this.languageCmbBox.Size = new System.Drawing.Size(121, 23);
             this.languageCmbBox.TabIndex = 16;
             // 
+            // checkBox_chaptersRange
+            // 
+            this.checkBox_chaptersRange.AutoSize = true;
+            this.checkBox_chaptersRange.Location = new System.Drawing.Point(23, 123);
+            this.checkBox_chaptersRange.Name = "checkBox_chaptersRange";
+            this.checkBox_chaptersRange.Size = new System.Drawing.Size(115, 19);
+            this.checkBox_chaptersRange.TabIndex = 17;
+            this.checkBox_chaptersRange.Text = "Chapters Range :";
+            this.checkBox_chaptersRange.UseVisualStyleBackColor = true;
+            // 
+            // numeric_chaptersRangeFrom
+            // 
+            this.numeric_chaptersRangeFrom.DecimalPlaces = 2;
+            this.numeric_chaptersRangeFrom.Location = new System.Drawing.Point(144, 122);
+            this.numeric_chaptersRangeFrom.Maximum = new decimal(new int[] {
+            998,
+            0,
+            0,
+            0});
+            this.numeric_chaptersRangeFrom.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numeric_chaptersRangeFrom.Name = "numeric_chaptersRangeFrom";
+            this.numeric_chaptersRangeFrom.Size = new System.Drawing.Size(52, 23);
+            this.numeric_chaptersRangeFrom.TabIndex = 18;
+            this.numeric_chaptersRangeFrom.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // lbl_chaptersRangeTo
+            // 
+            this.lbl_chaptersRangeTo.AutoSize = true;
+            this.lbl_chaptersRangeTo.Location = new System.Drawing.Point(202, 124);
+            this.lbl_chaptersRangeTo.Name = "lbl_chaptersRangeTo";
+            this.lbl_chaptersRangeTo.Size = new System.Drawing.Size(18, 15);
+            this.lbl_chaptersRangeTo.TabIndex = 19;
+            this.lbl_chaptersRangeTo.Text = "to";
+            // 
+            // numeric_chaptersRangeTo
+            // 
+            this.numeric_chaptersRangeTo.DecimalPlaces = 2;
+            this.numeric_chaptersRangeTo.Location = new System.Drawing.Point(226, 122);
+            this.numeric_chaptersRangeTo.Maximum = new decimal(new int[] {
+            999,
+            0,
+            0,
+            0});
+            this.numeric_chaptersRangeTo.Minimum = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            this.numeric_chaptersRangeTo.Name = "numeric_chaptersRangeTo";
+            this.numeric_chaptersRangeTo.Size = new System.Drawing.Size(52, 23);
+            this.numeric_chaptersRangeTo.TabIndex = 20;
+            this.numeric_chaptersRangeTo.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
+            // 
+            // checkBox_skipMangos
+            // 
+            this.checkBox_skipMangos.AutoSize = true;
+            this.checkBox_skipMangos.Location = new System.Drawing.Point(391, 123);
+            this.checkBox_skipMangos.Name = "checkBox_skipMangos";
+            this.checkBox_skipMangos.Size = new System.Drawing.Size(54, 19);
+            this.checkBox_skipMangos.TabIndex = 21;
+            this.checkBox_skipMangos.Text = "Skip :";
+            this.checkBox_skipMangos.UseVisualStyleBackColor = true;
+            // 
+            // numeric_skipMangos
+            // 
+            this.numeric_skipMangos.Location = new System.Drawing.Point(451, 122);
+            this.numeric_skipMangos.Maximum = new decimal(new int[] {
+            999,
+            0,
+            0,
+            0});
+            this.numeric_skipMangos.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numeric_skipMangos.Name = "numeric_skipMangos";
+            this.numeric_skipMangos.Size = new System.Drawing.Size(46, 23);
+            this.numeric_skipMangos.TabIndex = 22;
+            this.numeric_skipMangos.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(557, 430);
+            this.Controls.Add(this.numeric_skipMangos);
+            this.Controls.Add(this.checkBox_skipMangos);
+            this.Controls.Add(this.numeric_chaptersRangeTo);
+            this.Controls.Add(this.lbl_chaptersRangeTo);
+            this.Controls.Add(this.numeric_chaptersRangeFrom);
+            this.Controls.Add(this.checkBox_chaptersRange);
             this.Controls.Add(this.languageCmbBox);
             this.Controls.Add(this.lbl_language);
             this.Controls.Add(this.txtBox_Delay);
@@ -206,6 +318,9 @@
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "Spanish Scrapper";
+            ((System.ComponentModel.ISupportInitialize)(this.numeric_chaptersRangeFrom)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numeric_chaptersRangeTo)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numeric_skipMangos)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -229,5 +344,11 @@
         private TextBox txtBox_Delay;
         private Label lbl_language;
         private ComboBox languageCmbBox;
+        private CheckBox checkBox_chaptersRange;
+        private NumericUpDown numeric_chaptersRangeFrom;
+        private Label lbl_chaptersRangeTo;
+        private NumericUpDown numeric_chaptersRangeTo;
+        private CheckBox checkBox_skipMangos;
+        private NumericUpDown numeric_skipMangos;
     }
 }

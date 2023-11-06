@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml.XPath;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace SpanishScraper
@@ -24,7 +25,7 @@ namespace SpanishScraper
         private CancellationTokenSource cancellationToken = new();
         private int waitingTimeBetweenChapters = 3000;
         private const string domainName = "https://visortmo.com";
-        private const string folderNameTemplate = "{0} [{1}] - c{2} [{3}]";
+        private const string folderNameTemplate = "{0} [{1}] - {2} [{3}]";
         private readonly Dictionary<string, string> langDict = new()
         {
             {"Spanish ","es" },
@@ -32,6 +33,10 @@ namespace SpanishScraper
         };
         public Form1()
         {
+            System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
+            customCulture.NumberFormat.NumberDecimalSeparator = ".";
+            Thread.CurrentThread.CurrentCulture = customCulture;
+
             InitializeComponent();
             AddLog("Downloading Chromium ...");
             var progress = new Progress<bool>(value =>
@@ -75,66 +80,220 @@ namespace SpanishScraper
             }
         }
 
-        private void Btn_scan_Click(object sender, EventArgs e)
+        private async void Btn_scan_Click(object sender, EventArgs e)
         {
             if (txtBox_mangoUrl.Text == String.Empty || txtBox_setFolder.Text == string.Empty)
             {
                 MessageBox.Show("Retard.", "Retard Alert", MessageBoxButtons.YesNo, MessageBoxIcon.Hand);
                 return;
             }
-            doc = webClient.Load(txtBox_mangoUrl.Text);
+            await GetPage(txtBox_mangoUrl.Text);
             ListScantardsGroups(doc);
         }
         
         private async void Btn_download_Click(object sender, EventArgs e)
         {
-            if (!listBox_Scannies.Visible)
+            cancellationToken = new CancellationTokenSource();
+            listbox_logger.Items.Clear();
+            ToggleButtonsAndShit();
+
+            switch (txtBox_mangoUrl.Text)
             {
-                MessageBox.Show("You need to scan the scannies first to select your favourite autists.", "Scannies Alert", MessageBoxButtons.YesNo, MessageBoxIcon.Hand);
+                case string url when url.Contains(domainName + "/library/manga/")
+                                  || url.Contains(domainName + "/library/one_shot/"):
+                    await BulkChaptersDownload();
+                    break;
+                case string url when url.Contains(domainName + "/view_uploads/")
+                                  || url.Contains(domainName + "/viewer/"):
+                    await SingleChapterDownload();
+                    break;
+                case string url when url.Contains(domainName + "/groups/") && url.Contains("/proyects"):
+                    await GroupChaptersDownload();
+                    break;
+                default:
+                    AddLog("Error: wrong URL.");
+                    break;
+            }
+
+            ToggleButtonsAndShit();
+        }
+
+        private async Task GroupChaptersDownload()
+        {
+            string mangoUrl, mangoTitle;
+            int skippedMangos = 0,
+                mangosToSkip = checkBox_skipMangos.Checked ? (int)numeric_skipMangos.Value : -1;
+            try
+            {
+                await GetPage(txtBox_mangoUrl.Text);
+                string[] groupName = new string[]
+                { 
+                    doc.DocumentNode.SelectSingleNode("//h1").InnerText.Trim() 
+                };
+
+                var mangos = doc.DocumentNode.SelectNodes("//div[contains(concat(' ',normalize-space(@class),' '),' proyect-item ')]/a");
+                
+                foreach(var mango in mangos)
+                {
+                    if (skippedMangos++ < mangosToSkip)
+                    {
+                        continue;
+                    }
+                    mangoTitle = mango.Descendants("h4").First().InnerText;
+                    AddLog("Downloading chapters of " + mangoTitle);
+                    mangoUrl = mango.Attributes["href"].Value;
+                    await BulkChaptersDownload(groupName, mangoUrl, true);
+
+                    cancellationToken.Token.ThrowIfCancellationRequested();
+                    AddLog("Done with " + mangoTitle);
+                    AddLog("Waiting 2000 ms before next mango.");
+                    await Task.Delay(2000);
+                    listbox_logger.Items.Clear();
+                }
+
+            }
+            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
+            {
+                AddLog("Aborted group download.");
+            }
+            catch (Exception exc)
+            {
+                AddLog(exc.Message);
+                AddLog("Something went wrong.");
+                cancellationToken.Cancel();
+            }
+        }
+
+        private async Task SingleChapterDownload()
+        {
+            string mainFolder = txtBox_setFolder.Text,
+                mangaTitle,
+                language = languageCmbBox.SelectedValue.ToString(),
+                chapterNumber,
+                groupName,
+                currentFolder = "";
+
+            try
+            {
+                AddLog("Downloading single chapter.");
+                HtmlNodeCollection imgNodes = await GetChapterImgNodes(txtBox_mangoUrl.Text);
+
+                var headerWithChapNumberAndGroups = doc.DocumentNode.SelectSingleNode("//h2");
+                chapterNumber = doc.DocumentNode.SelectSingleNode("//h4").InnerText.Contains("ONE SHOT") ? "000" 
+                                : "c" + ParseAndPadChapterNumber(headerWithChapNumberAndGroups.InnerText.Substring(9).Trim());
+                groupName = String.Join('+', headerWithChapNumberAndGroups.Elements("a").Select(d => d.InnerText).ToArray());
+                mangaTitle = CleanMangoTitle(doc.DocumentNode.SelectSingleNode("//h1").InnerText);
+
+                if (checkBox_MangoSubfolder.Checked)
+                {
+                    mainFolder = Path.Combine(mainFolder, mangaTitle);
+                    Directory.CreateDirectory(mainFolder);
+                }
+
+                currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangaTitle, language, chapterNumber, groupName));
+
+                if (Directory.Exists(currentFolder))
+                {
+                    AddLog("Skipping chapter " + chapterNumber + " by '" + groupName + "'. Folder already exists.");
+                }
+                else
+                {
+                    Directory.CreateDirectory(currentFolder);
+
+                    AddLog("Downloading chapter " + chapterNumber + " by '" + groupName + "'");
+                    await DownloadChapter(currentFolder, "", imgNodes);
+                    AddLog("Done downloading chapter " + chapterNumber + " by '" + groupName + "'");
+                }
+
+            }
+            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
+            {
+                AddLog("Stopped download.");
+            }
+            catch (Exception exc)
+            {
+                AddLog(exc.Message);
+                AddLog("Something went wrong.");
+                cancellationToken.Cancel();
+            }
+            finally
+            {
+                if (cancellationToken.IsCancellationRequested && currentFolder != "")
+                {
+                    Directory.Delete(currentFolder, true);
+                }
+            }
+        }
+
+        private async Task BulkChaptersDownload(string[]? groups = null, string? mangoUrl = null, bool includeJointGroupsChapters = false)
+        {
+            if (!listBox_Scannies.Visible && groups == null)
+            {
+                AddLog("Error: scan the scannies first.");
                 return;
             }
             string mainFolder = txtBox_setFolder.Text,
-                mangaTitle = ReplaceInvalidChars(txtBox_mangoUrl.Text.Split('/').Last()).Truncate(20),
+                mangaTitle = "",
                 language = languageCmbBox.SelectedValue.ToString(),
                 chapterNumber,
                 currentFolder = "";
-            bool actuallyDidSomething = false;
-            listbox_logger.Items.Clear();
-            ToggleButtonsAndShit();
-            doc = webClient.Load(txtBox_mangoUrl.Text);
-            Dictionary<string, (string GroupName, string ChapterLink)[]> chapters = GetChaptersLinks(doc);
+            decimal chapterRangeFrom = numeric_chaptersRangeFrom.Value,
+                    chapterRangeTo = numeric_chaptersRangeTo.Value;
+            groups ??= listBox_Scannies.CheckedItems.Cast<string>().ToArray();
+            mangoUrl ??= txtBox_mangoUrl.Text;
+            bool actuallyDidSomething = false,
+                isOneShot = mangoUrl.Contains("/one_shot/");
 
-            if (checkBox_MangoSubfolder.Checked)
-            {
-                mainFolder = Path.Combine(mainFolder, mangaTitle);
-                Directory.CreateDirectory(mainFolder);
-            }
             try
             {
-                foreach (var chapter in chapters.Reverse())
+                await GetPage(mangoUrl);
+                mangaTitle = CleanMangoTitle(doc.DocumentNode.SelectSingleNode("//h2").InnerText);
+                SortedDictionary<string, (string GroupName, string ChapterLink)[]> chapters = isOneShot ? GetOneShotLinks(doc) : GetChaptersLinks(doc);
+
+                if (checkBox_chaptersRange.Checked && !isOneShot)
                 {
-                    AddLog("Checking chapter " + chapter.Key);
+                    if (chapterRangeFrom > chapterRangeTo)
+                    {
+                        AddLog("Error: invalid chapter range.");
+                        return;
+                    }
+
+                    chapters = new SortedDictionary<string, (string GroupName, string ChapterLink)[]> 
+                                (chapters.Where(d => decimal.Parse(d.Key) >= chapterRangeFrom && decimal.Parse(d.Key) <= chapterRangeTo)
+                                .ToDictionary(d => d.Key, d => d.Value));
+                }
+
+                if (checkBox_MangoSubfolder.Checked)
+                {
+                    mainFolder = Path.Combine(mainFolder, mangaTitle);
+                    Directory.CreateDirectory(mainFolder);
+                }
+
+                foreach (var chapter in chapters)
+                {
+                    chapterNumber = isOneShot ? "000" : "c" + chapter.Key;
+                    AddLog("Checking chapter " + chapterNumber);
 
                     foreach (var uploadedChapter in chapter.Value)
                     {
                         currentFolder = "";
+                        
                         cancellationToken.Token.ThrowIfCancellationRequested();
 
-                        actuallyDidSomething = false;
-
-                        if (listBox_Scannies.CheckedItems.Contains(uploadedChapter.GroupName))
+                        if (groups.Contains(uploadedChapter.GroupName) || (includeJointGroupsChapters && groups.Any(uploadedChapter.GroupName.Contains)))
                         {
-                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangaTitle, language, chapter.Key, uploadedChapter.GroupName));
+                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangaTitle, language, chapterNumber, uploadedChapter.GroupName));
 
                             if (Directory.Exists(currentFolder))
                             {
-                                AddLog("Skipping chapter " + chapter.Key + " by '" + uploadedChapter.GroupName + "'. Folder already exists.");
+                                AddLog("Skipping chapter " + chapterNumber + " by '" + uploadedChapter.GroupName + "'. Folder already exists.");
                                 continue;
                             }
+
                             Directory.CreateDirectory(currentFolder);
-                            AddLog("Downloading chapter " + chapter.Key + " by '" + uploadedChapter.GroupName + "'");
-                            await DownloadChapter(uploadedChapter.ChapterLink, currentFolder);
-                            AddLog("Done downloading chapter " + chapter.Key + " by '" + uploadedChapter.GroupName + "'");
+                            AddLog("Downloading chapter " + chapterNumber + " by '" + uploadedChapter.GroupName + "'");
+                            await DownloadChapter(currentFolder, uploadedChapter.ChapterLink);
+                            AddLog("Done downloading chapter " + chapterNumber + " by '" + uploadedChapter.GroupName + "'");
                             actuallyDidSomething = true;
                         }
                     }
@@ -146,18 +305,20 @@ namespace SpanishScraper
                     }
                     else
                     {
-                        AddLog("No chapter found by selected scannies.");
+                        AddLog("No upload found or chapter already downloaded.");
                     }
+
+                    actuallyDidSomething = false;
                 }
             }
-            catch(Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException )
+            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
             {
                 AddLog("Stopped download.");
             }
             catch (Exception exc)
             {
                 AddLog(exc.Message);
-                AddLog("Something went wrong. Probably going too fast.");
+                AddLog("Something went wrong.");
                 cancellationToken.Cancel();
             }
             finally
@@ -166,22 +327,21 @@ namespace SpanishScraper
                 {
                     Directory.Delete(currentFolder, true);
                 }
-                cancellationToken = new CancellationTokenSource();
-                ToggleButtonsAndShit();
             }
         }
-
-        private async Task DownloadChapter(string chapterLink, string folderPath)
+        private async Task DownloadChapter(string folderPath, string chapterLink = "", HtmlNodeCollection? imgNodes = null)
         {
-            var imgUrls = await GetChapterImgNodes(chapterLink);
+            imgNodes ??= await GetChapterImgNodes(chapterLink);
             string url, filename;
             var tasks = new List<Task>();
-            for (int i=0 ; i < imgUrls.Count; i++)
+
+            for (int i=0 ; i < imgNodes.Count; i++)
             {
-                url = imgUrls[i].Attributes["data-src"].Value;
+                url = imgNodes[i].Attributes["data-src"].Value;
                 filename = $"{i:D3}." + url.Split('.').Last();
                 tasks.Add(DownloadFile(new Uri(url), Path.Combine(folderPath, filename), filename));
             }
+
             await Task.WhenAll(tasks);
         }
 
@@ -190,65 +350,40 @@ namespace SpanishScraper
             using (var page = await browser.NewPageAsync())
             {
                 HtmlNodeCollection? imgNodes = null;
-                await page.SetExtraHttpHeadersAsync(new Dictionary<string, string> { { "Referer", domainName } });
-                await page.SetJavaScriptEnabledAsync(true);
-                await page.SetRequestInterceptionAsync(true);
-
-                page.Response += (sender, e) =>
-                {
-                    lastResponse = e.Response;
-                };
-                page.Request += (sender, e) =>
-                {
-                    switch(e.Request.ResourceType)
-                    {
-                        case ResourceType.Image:
-                        case ResourceType.Img:
-                        case ResourceType.StyleSheet:
-                            e.Request.AbortAsync();
-                            break;
-                        case ResourceType.Script:
-                            if (!page.Url.Contains("/view_uploads/"))
-                            {
-                                e.Request.AbortAsync();
-                            }
-                            else
-                            {
-                                e.Request.ContinueAsync();
-                            }
-                            break;
-                        default:
-                            e.Request.ContinueAsync();
-                            break;
-                    }
-                };
+                await ConfigurePuppeteerPage(page);
 
                 while (imgNodes == null)
                 {
                     try
                     {
-                        await NavigateToChapterPage(chapterLink, page);
+                        await GetChapterPage(chapterLink, page);
                         doc.LoadHtml(await page.GetContentAsync());
                         imgNodes = doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]");
                     }
+                    catch(HttpRequestException exc)
+                    {
+                        throw;
+                    }
                     catch(Exception ex) when (ex is not TaskCanceledException && ex is not OperationCanceledException)
                     {
-                        AddLog(ex.Message);
+                        AddLog("Error: " + ex.Message);
                         AddLog("Fetching chapter page failed. Retrying ...");
+                        await Task.Delay(random.Next(1000, 2000));
                     }
                 }
+
                 return imgNodes;
             }
         }
 
-        private async Task NavigateToChapterPage(string chapterLink, IPage page)
+        private async Task GetChapterPage(string chapterLink, IPage page, int counter = 1)
         {
             bool goodToGo = false;
             cancellationToken.Token.ThrowIfCancellationRequested();
-            
             try
             {
                 await page.GoToAsync(chapterLink, navigationOptionsDefault);
+
                 if (page.Url.Contains("/view_uploads/"))
                 {
                     await page.WaitForNavigationAsync(navigationOptionsRedirect);
@@ -261,20 +396,38 @@ namespace SpanishScraper
             switch(true)
             {
                 case true when titleText.Contains("Estas haciendo demasiadas peticiones"):
-                    AddLog("Ratelimit hit. Waiting around 3-5 seconds ...");
+                    AddLog($"Ratelimit hit. Waiting around 3-5 seconds ... ({counter})");
                     AddLog("Try increasing the delay if you get this often.");
                     await Task.Delay(random.Next(3000, 5000));
                     goto CaseUrl;
-                case true when !page.Url.Contains(domainName + "/viewer/") || !page.Url.Contains("/cascade"):
-                    CaseUrl:
-                    chapterLink = page.Url.Replace("paginated", "cascade");
-                    chapterLink = Regex.Replace(chapterLink, "https.+/news/", domainName + "/viewer/");
-                    break;
+
+                case true when lastResponse.Status == HttpStatusCode.NotFound:
+                    throw new HttpRequestException("Error: 404 page not found. Aborting.");
+
                 case true when !lastResponse.Ok:
                     AddLog("Last chapter request failed.");
                     AddLog("Status code : " + lastResponse.Status);
-                    AddLog("Retrying ...");
+                    AddLog($"Retrying ... ({counter})");
+                    await Task.Delay(random.Next(1000, 2000));
                     break;
+
+                case true when !page.Url.Contains(domainName + "/viewer/") || !page.Url.Contains("/cascade"):
+                CaseUrl:
+
+                    if (page.Url.Contains(domainName) || page.Url.Contains("/news/"))
+                    {
+                        chapterLink = page.Url;
+                    }
+                    else
+                    {
+                        AddLog($"Failed getting chapter page. Retrying ... ({counter})");
+                    }
+
+                    chapterLink = Regex.Replace(chapterLink, "https.+/news/", domainName + "/viewer/");
+                    chapterLink = chapterLink.Replace("paginated", "cascade");
+                    await Task.Delay(500);
+                    break;
+
                 default: 
                     goodToGo = true;
                     break;
@@ -282,13 +435,37 @@ namespace SpanishScraper
 
             if (!goodToGo)
             {
-                await NavigateToChapterPage(chapterLink, page);
+                await GetChapterPage(chapterLink, page, ++counter);
+            }
+        }
+
+        private async Task GetPage(string url)
+        {
+            int counter = 1;
+            string titleText;
+            bool goodToGo = false;
+
+            while (!goodToGo)
+            {
+                doc = webClient.Load(url);
+                titleText = doc.DocumentNode.SelectSingleNode("//title").InnerHtml;
+
+                if (titleText.Contains("Estas haciendo demasiadas peticiones"))
+                {
+                    AddLog($"Ratelimit hit. Waiting around 3-5 seconds ... ({counter++})");
+                    await Task.Delay(random.Next(3000, 5000));
+                }
+                else
+                {
+                    goodToGo = true;
+                }
             }
         }
 
         private async Task DownloadFile(Uri uri, string path, string filename)
         {
             cancellationToken.Token.ThrowIfCancellationRequested();
+
             using (var s = await httpClient.GetStreamAsync(uri, cancellationToken.Token))
             {
                 using (var fs = new FileStream(path, FileMode.CreateNew))
@@ -303,11 +480,18 @@ namespace SpanishScraper
         {
             List<string> scanGroups = new();
             var scanGroupsNodes = doc.DocumentNode.SelectNodes(@"//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]
-                                                                    //a[contains(@href, '/groups/')]");
+                                                                 //div[1][contains(concat(' ',normalize-space(@class),' '),' text-truncate ')]
+                                                                 /span");
+            if (scanGroupsNodes == null)
+            {
+                throw new Exception("Error: 404 scannies not found. Check your URL.");
+            }
+
             foreach (var scanGroupNode in scanGroupsNodes)
             {
                 scanGroups.Add(String.Join('+', scanGroupNode.ParentNode.InnerText.Split(',', StringSplitOptions.TrimEntries)));
             }
+
             scanGroups = scanGroups.Distinct().ToList();
             scanGroups.Sort();
             listBox_Scannies.Items.Clear();
@@ -315,17 +499,16 @@ namespace SpanishScraper
             listBox_Scannies.Visible = true;
         }
 
-        private Dictionary<string, (string, string)[]> GetChaptersLinks(HtmlDocument doc)
+        private SortedDictionary<string, (string, string)[]> GetChaptersLinks(HtmlDocument doc)
         {
-            Dictionary<string, (string, string)[]> chapters = new();
+            SortedDictionary<string, (string, string)[]> chapters = new();
             var chaptersNodes = doc.DocumentNode.SelectNodes("//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]");
             IEnumerable<HtmlNode> uploadedChaptersNodes;
             string chapterNumber, uploadedChapterLink, groupName;
+
             for (int i = 0; i < chaptersNodes.Count; ++i)
             {
-                chapterNumber = chaptersNodes[i].Descendants("a").First().InnerText.Trim().Substring(9);
-
-                chapterNumber = ParseAndPadChapterNumber(chapterNumber);
+                chapterNumber = ParseAndPadChapterNumber(chaptersNodes[i].Descendants("a").First().InnerText.Substring(9).Trim());
 
                 uploadedChaptersNodes = chaptersNodes[i].Descendants("li");
                 (string, string)[] uploadedChapters = new (string, string)[uploadedChaptersNodes.Count()];
@@ -333,7 +516,7 @@ namespace SpanishScraper
                 for (int x = 0; x < uploadedChaptersNodes.Count(); ++x)
                 {
                     uploadedChapterLink = uploadedChaptersNodes.ElementAt(x).Descendants("a").Last().Attributes["href"].Value;
-                    groupName = String.Join('+', uploadedChaptersNodes.ElementAt(x).Descendants("a").First().ParentNode.InnerText.Split(',', StringSplitOptions.TrimEntries));
+                    groupName = String.Join('+', uploadedChaptersNodes.ElementAt(x).Descendants("span").First().InnerText.Split(',', StringSplitOptions.TrimEntries));
                     uploadedChapters[x] = (groupName, uploadedChapterLink);
                 }
 
@@ -350,9 +533,29 @@ namespace SpanishScraper
             return chapters;
         }
 
+        private SortedDictionary<string, (string, string)[]> GetOneShotLinks(HtmlDocument doc)
+        {
+            string uploadLink, groupName;
+            SortedDictionary<string, (string, string)[]> chapter = new();
+            var uploadNodes = doc.DocumentNode.SelectNodes("//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]");
+
+            (string, string)[] uploadLinks = new (string, string)[uploadNodes.Count];
+
+            for (int x = 0; x < uploadNodes.Count(); ++x)
+            {
+                uploadLink = uploadNodes.ElementAt(x).Descendants("a").Last().Attributes["href"].Value;
+                groupName = String.Join('+', uploadNodes.ElementAt(x).Descendants("span").First().InnerText.Split(',', StringSplitOptions.TrimEntries));
+                uploadLinks[x] = (groupName, uploadLink);
+            }
+
+            chapter.Add("000", uploadLinks);
+
+            return chapter;
+        }
+
         private string ParseAndPadChapterNumber(string chapterNumber)
         {
-            chapterNumber = chapterNumber.Substring(0, chapterNumber.IndexOf('.') + 3).Trim();
+            chapterNumber = chapterNumber.Substring(0, chapterNumber.IndexOf('.') + 3);
             string split = chapterNumber.Split('.').Last();
 
             if (int.Parse(split) > 0)
@@ -375,6 +578,46 @@ namespace SpanishScraper
             return chapterNumber;
         }
 
+
+
+        private async Task ConfigurePuppeteerPage(IPage page)
+        {
+            await page.SetExtraHttpHeadersAsync(new Dictionary<string, string> { { "Referer", domainName } });
+            await page.SetJavaScriptEnabledAsync(true);
+            await page.SetRequestInterceptionAsync(true);
+
+            page.Response += (sender, e) =>
+            {
+                lastResponse = e.Response;
+            };
+            page.Request += (sender, e) =>
+            {
+                switch (e.Request.ResourceType)
+                {
+                    case ResourceType.Image:
+                    case ResourceType.Img:
+                    case ResourceType.StyleSheet:
+                    case ResourceType.ImageSet:
+                    case ResourceType.Media:
+                        e.Request.AbortAsync();
+                        break;
+                    case ResourceType.Script:
+                        if (!page.Url.Contains("/view_uploads/"))
+                        {
+                            e.Request.AbortAsync();
+                        }
+                        else
+                        {
+                            e.Request.ContinueAsync();
+                        }
+                        break;
+                    default:
+                        e.Request.ContinueAsync();
+                        break;
+                }
+            };
+        }
+
         private void ToggleButtonsAndShit()
         {
             btn_setFolder.Enabled = !btn_setFolder.Enabled;
@@ -391,13 +634,13 @@ namespace SpanishScraper
 
         private void btn_stop_Click(object sender, EventArgs e)
         {
-            //canceled = true;
             cancellationToken?.Cancel();
+            AddLog("Post-natal abortion requested.");
         }
 
-        private string ReplaceInvalidChars(string filename)
+        private string CleanMangoTitle(string filename)
         {
-            return string.Join("_", filename.Split(Path.GetInvalidFileNameChars()));
+            return string.Join("", filename.Split(Path.GetInvalidPathChars())).Truncate(40).Trim().Replace(' ', '-');
         }
 
         private void txtBox_Delay_TextChanged(object sender, EventArgs e)
@@ -421,6 +664,7 @@ namespace SpanishScraper
 
                 browser?.CloseAsync();
             }
+
             base.Dispose(disposing);
         }
     }
