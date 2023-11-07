@@ -172,6 +172,7 @@ namespace SpanishScraper
                     listbox_logger.Items.Clear();
                 }
 
+                AddLog("Done downloading group mangos.");
             }
             catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
             {
@@ -254,7 +255,7 @@ namespace SpanishScraper
                 return;
             }
             string mainFolder = txtBox_setFolder.Text,
-                mangaTitle = "",
+                mangoTitle = "",
                 language = languageCmbBox.SelectedValue.ToString(),
                 chapterNumber,
                 currentFolder = "";
@@ -268,7 +269,7 @@ namespace SpanishScraper
             try
             {
                 await GetPage(mangoUrl);
-                mangaTitle = CleanMangoTitle(doc.DocumentNode.SelectSingleNode("//h2").InnerText);
+                mangoTitle = CleanMangoTitle(doc.DocumentNode.SelectSingleNode("//h2").InnerText);
                 SortedDictionary<string, (string GroupName, string ChapterLink)[]> chapters = isOneShot ? GetOneShotLinks(doc) : GetChaptersLinks(doc);
 
                 if (checkBox_chaptersRange.Checked && !isOneShot)
@@ -286,7 +287,7 @@ namespace SpanishScraper
 
                 if (checkBox_MangoSubfolder.Checked)
                 {
-                    mainFolder = Path.Combine(mainFolder, mangaTitle);
+                    mainFolder = Path.Combine(mainFolder, mangoTitle);
                     Directory.CreateDirectory(mainFolder);
                 }
 
@@ -303,7 +304,7 @@ namespace SpanishScraper
 
                         if (groups.Contains(uploadedChapter.GroupName) || (includeJointGroupsChapters && groups.Any(uploadedChapter.GroupName.Contains)))
                         {
-                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangaTitle, language, chapterNumber, uploadedChapter.GroupName));
+                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangoTitle, language, chapterNumber, uploadedChapter.GroupName));
 
                             if (Directory.Exists(currentFolder))
                             {
@@ -331,6 +332,8 @@ namespace SpanishScraper
 
                     actuallyDidSomething = false;
                 }
+
+                AddLog("Done downloading chapters of " + mangoTitle);
             }
             catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
             {
@@ -601,8 +604,6 @@ namespace SpanishScraper
             return chapterNumber;
         }
 
-
-
         private async Task ConfigurePuppeteerPage(IPage page)
         {
             await page.SetExtraHttpHeadersAsync(new Dictionary<string, string> { { "Referer", domainName } });
@@ -613,6 +614,7 @@ namespace SpanishScraper
             {
                 lastResponse = e.Response;
             };
+
             page.Request += (sender, e) =>
             {
                 switch (e.Request.ResourceType)
@@ -663,7 +665,14 @@ namespace SpanishScraper
 
         private string CleanMangoTitle(string filename)
         {
-            return string.Join(" ", filename.Split(Path.GetInvalidFileNameChars())).Truncate(40).Trim().Replace(' ', '-');
+            string title = string.Join(" ", filename.Split(Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).ToArray())).Truncate(40).Trim().Replace(' ', '-');
+
+            while (title.Last() == '.')
+            {
+                title = title.Remove(title.Length - 1, 1);
+            }
+
+            return title;
         }
 
         private void txtBox_Delay_TextChanged(object sender, EventArgs e)
