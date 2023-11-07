@@ -663,7 +663,7 @@ namespace SpanishScraper
 
         private string CleanMangoTitle(string filename)
         {
-            return string.Join("", filename.Split(Path.GetInvalidPathChars())).Truncate(40).Trim().Replace(' ', '-');
+            return string.Join(" ", filename.Split(Path.GetInvalidFileNameChars())).Truncate(40).Trim().Replace(' ', '-');
         }
 
         private void txtBox_Delay_TextChanged(object sender, EventArgs e)
