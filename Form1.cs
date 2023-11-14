@@ -1,8 +1,10 @@
 using HtmlAgilityPack;
 using PuppeteerSharp;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net;
+using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
@@ -121,6 +123,9 @@ namespace SpanishScraper
             switch (txtBox_mangoUrl.Text)
             {
                 case string url when url.Contains(domainName + "/library/manga/")
+                                  || url.Contains(domainName + "/library/manhua/")
+                                  || url.Contains(domainName + "/library/manhwa/")
+                                  || url.Contains(domainName + "/library/doujinshi/")
                                   || url.Contains(domainName + "/library/one_shot/"):
                     await BulkChaptersDownload();
                     break;
@@ -404,6 +409,7 @@ namespace SpanishScraper
         {
             bool goodToGo = false;
             cancellationToken.Token.ThrowIfCancellationRequested();
+
             try
             {
                 await page.GoToAsync(chapterLink, navigationOptionsDefault);
@@ -415,11 +421,9 @@ namespace SpanishScraper
             }
             catch(NavigationException){ }
 
-            string titleText = (await (await (await page.QuerySelectorAsync("title")).GetPropertyAsync("innerText")).JsonValueAsync()).ToString();
-
             switch(true)
             {
-                case true when titleText.Contains("Estas haciendo demasiadas peticiones"):
+                case true when lastResponse.Status == HttpStatusCode.TooManyRequests:
                     AddLog($"Ratelimit hit. Waiting around 3-5 seconds ... ({counter})");
                     AddLog("Try increasing the delay if you get this often.");
                     await Task.Delay(random.Next(3000, 5000));
@@ -466,7 +470,6 @@ namespace SpanishScraper
         private async Task GetPage(string url)
         {
             int counter = 1;
-            string titleText;
             bool goodToGo = false;
 
             while (!goodToGo)
@@ -474,16 +477,23 @@ namespace SpanishScraper
                 cancellationToken.Token.ThrowIfCancellationRequested();
 
                 doc = webClient.Load(url);
-                titleText = doc.DocumentNode.SelectSingleNode("//title").InnerHtml;
 
-                if (titleText.Contains("Estas haciendo demasiadas peticiones"))
+                switch (webClient.StatusCode)
                 {
-                    AddLog($"Ratelimit hit. Waiting around 3-5 seconds ... ({counter++})");
-                    await Task.Delay(random.Next(3000, 5000));
-                }
-                else
-                {
-                    goodToGo = true;
+                    case HttpStatusCode.NotFound:
+                        throw new HttpRequestException("Error: 404 not found. Check your URL.");
+                    case HttpStatusCode.TooManyRequests:
+                        AddLog($"Ratelimit hit. Waiting around 3-5 seconds ... ({counter++})");
+                        await Task.Delay(random.Next(3000, 5000));
+                        break;
+                    case HttpStatusCode.OK:
+                        goodToGo = true;
+                        break;
+                    default:
+                        AddLog("Loading page failed. Status code : " + webClient.StatusCode);
+                        AddLog("Retrying ...");
+                        await Task.Delay(random.Next(1000, 1500));
+                        break;
                 }
             }
         }
@@ -665,7 +675,7 @@ namespace SpanishScraper
 
         private string CleanMangoTitle(string filename)
         {
-            string title = string.Join(" ", filename.Split(Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).ToArray())).Truncate(40).Trim().Replace(' ', '-');
+            string title = string.Join(" ", WebUtility.HtmlDecode(filename).Split(Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).ToArray())).Truncate(40).Trim().Replace(' ', '-');
 
             while (title.Last() == '.')
             {
