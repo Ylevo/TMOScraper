@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -168,7 +169,19 @@ namespace SpanishScraper
                     mangoTitle = mango.Descendants("h4").First().InnerText;
                     AddLog("Downloading chapters of " + mangoTitle);
                     mangoUrl = mango.Attributes["href"].Value;
-                    await BulkChaptersDownload(groupName, mangoUrl, true);
+                    try
+                    {
+                        await BulkChaptersDownload(groupName, mangoUrl, true, true);
+                    }
+                    catch(HttpRequestException httpEx)
+                    {
+                        if (httpEx.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            AddLog("Mango URL not found for \"" + mangoTitle + "\". Continuing.");
+                            continue;
+                        }
+                        throw;
+                    }
 
                     cancellationToken.Token.ThrowIfCancellationRequested();
                     AddLog("Done with " + mangoTitle);
@@ -252,7 +265,7 @@ namespace SpanishScraper
             }
         }
 
-        private async Task BulkChaptersDownload(string[]? groups = null, string? mangoUrl = null, bool includeJointGroupsChapters = false)
+        private async Task BulkChaptersDownload(string[]? groups = null, string? mangoUrl = null, bool includeJointGroupsChapters = false, bool continueIfMangoNotFound = false)
         {
             if (!listBox_Scannies.Visible && groups == null)
             {
@@ -275,7 +288,7 @@ namespace SpanishScraper
             {
                 await GetPage(mangoUrl);
                 mangoTitle = CleanMangoTitle(doc.DocumentNode.SelectSingleNode("//h2").InnerText);
-                SortedDictionary<string, (string GroupName, string ChapterLink)[]> chapters = isOneShot ? GetOneShotLinks(doc) : GetChaptersLinks(doc);
+                SortedDictionary<string, (string groupName, string chapterLink)[]> chapters = isOneShot ? GetOneShotLinks(doc) : GetChaptersLinks(doc);
 
                 if (checkBox_chaptersRange.Checked && !isOneShot)
                 {
@@ -285,7 +298,7 @@ namespace SpanishScraper
                         return;
                     }
 
-                    chapters = new SortedDictionary<string, (string GroupName, string ChapterLink)[]> 
+                    chapters = new SortedDictionary<string, (string groupName, string chapterLink)[]> 
                                 (chapters.Where(d => decimal.Parse(d.Key) >= chapterRangeFrom && decimal.Parse(d.Key) <= chapterRangeTo)
                                 .ToDictionary(d => d.Key, d => d.Value));
                 }
@@ -301,26 +314,26 @@ namespace SpanishScraper
                     chapterNumber = isOneShot ? "000" : "c" + chapter.Key;
                     AddLog("Checking chapter " + chapterNumber);
 
-                    foreach (var uploadedChapter in chapter.Value)
+                    foreach (var (groupName, chapterLink) in chapter.Value)
                     {
                         currentFolder = "";
                         
                         cancellationToken.Token.ThrowIfCancellationRequested();
 
-                        if (groups.Contains(uploadedChapter.GroupName) || (includeJointGroupsChapters && groups.Any(uploadedChapter.GroupName.Contains)))
+                        if (groups.Contains(groupName) || (includeJointGroupsChapters && groups.Any(groupName.Contains)))
                         {
-                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangoTitle, language, chapterNumber, uploadedChapter.GroupName));
+                            currentFolder = Path.Combine(mainFolder, String.Format(folderNameTemplate, mangoTitle, language, chapterNumber, groupName));
 
                             if (Directory.Exists(currentFolder))
                             {
-                                AddLog("Skipping chapter " + chapterNumber + " by '" + uploadedChapter.GroupName + "'. Folder already exists.");
+                                AddLog("Skipping chapter " + chapterNumber + " by '" + groupName + "'. Folder already exists.");
                                 continue;
                             }
 
                             Directory.CreateDirectory(currentFolder);
-                            AddLog("Downloading chapter " + chapterNumber + " by '" + uploadedChapter.GroupName + "'");
-                            await DownloadChapter(currentFolder, uploadedChapter.ChapterLink);
-                            AddLog("Done downloading chapter " + chapterNumber + " by '" + uploadedChapter.GroupName + "'");
+                            AddLog("Downloading chapter " + chapterNumber + " by '" + groupName + "'");
+                            await DownloadChapter(currentFolder, chapterLink);
+                            AddLog("Done downloading chapter " + chapterNumber + " by '" + groupName + "'");
                             actuallyDidSomething = true;
                         }
                     }
@@ -344,9 +357,13 @@ namespace SpanishScraper
             {
                 AddLog("Stopped download.");
             }
-            catch (Exception exc)
+            catch(Exception ex) when (ex is HttpRequestException && continueIfMangoNotFound && ((HttpRequestException)ex).StatusCode == HttpStatusCode.NotFound)
             {
-                AddLog(exc.Message);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                AddLog(ex.Message);
                 AddLog("Something went wrong.");
                 cancellationToken.Cancel();
             }
@@ -430,7 +447,7 @@ namespace SpanishScraper
                     goto CaseUrl;
 
                 case true when lastResponse.Status == HttpStatusCode.NotFound:
-                    throw new HttpRequestException("Error: 404 page not found. Aborting.");
+                    throw new HttpRequestException("Error: 404 page not found. Aborting.", null, HttpStatusCode.NotFound);
 
                 case true when !lastResponse.Ok:
                     AddLog("Last chapter request failed.");
@@ -481,7 +498,7 @@ namespace SpanishScraper
                 switch (webClient.StatusCode)
                 {
                     case HttpStatusCode.NotFound:
-                        throw new HttpRequestException("Error: 404 not found. Check your URL.");
+                        throw new HttpRequestException("Error: 404 not found. Check your URL.", null, HttpStatusCode.NotFound);
                     case HttpStatusCode.TooManyRequests:
                         AddLog($"Ratelimit hit. Waiting around 3-5 seconds ... ({counter++})");
                         await Task.Delay(random.Next(3000, 5000));
