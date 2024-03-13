@@ -1,6 +1,6 @@
-﻿namespace SpanishScraper
+﻿namespace TMOScrapper
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -57,7 +57,7 @@
             this.btn_download.TabIndex = 0;
             this.btn_download.Text = "Download";
             this.btn_download.UseVisualStyleBackColor = true;
-            this.btn_download.Click += new System.EventHandler(this.Btn_download_Click);
+            this.btn_download.Click += new System.EventHandler(this.BtnDownload_Click);
             // 
             // lbl_mangoUrl
             // 
@@ -74,7 +74,7 @@
             this.txtBox_mangoUrl.Name = "txtBox_mangoUrl";
             this.txtBox_mangoUrl.Size = new System.Drawing.Size(441, 23);
             this.txtBox_mangoUrl.TabIndex = 2;
-            this.txtBox_mangoUrl.TextChanged += new System.EventHandler(this.txtBox_mangoUrl_TextChanged);
+            this.txtBox_mangoUrl.TextChanged += new System.EventHandler(this.TxtBoxMangoUrl_TextChanged);
             // 
             // txtBox_setFolder
             // 
@@ -92,7 +92,7 @@
             this.btn_setFolder.TabIndex = 5;
             this.btn_setFolder.Text = "Set Folder";
             this.btn_setFolder.UseVisualStyleBackColor = true;
-            this.btn_setFolder.Click += new System.EventHandler(this.Btn_setFolder_Click);
+            this.btn_setFolder.Click += new System.EventHandler(this.BtnSetFolder_Click);
             // 
             // btn_scan
             // 
@@ -154,7 +154,7 @@
             this.btn_stop.TabIndex = 12;
             this.btn_stop.Text = "Stop";
             this.btn_stop.UseVisualStyleBackColor = true;
-            this.btn_stop.Click += new System.EventHandler(this.btn_stop_Click);
+            this.btn_stop.Click += new System.EventHandler(this.BtnStop_Click);
             // 
             // label2
             // 
@@ -172,7 +172,7 @@
             this.txtBox_Delay.Size = new System.Drawing.Size(62, 23);
             this.txtBox_Delay.TabIndex = 14;
             this.txtBox_Delay.Text = "3000";
-            this.txtBox_Delay.TextChanged += new System.EventHandler(this.txtBox_Delay_TextChanged);
+            this.txtBox_Delay.TextChanged += new System.EventHandler(this.TxtBoxDelay_TextChanged);
             // 
             // lbl_language
             // 
@@ -317,7 +317,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.Name = "Form1";
-            this.Text = "Spanish Scrapper";
+            this.Text = "TMO Scrapper";
             ((System.ComponentModel.ISupportInitialize)(this.numeric_chaptersRangeFrom)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_chaptersRangeTo)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_skipMangos)).EndInit();
