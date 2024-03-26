@@ -288,7 +288,7 @@
             0,
             0});
             // 
-            // Form1
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -316,7 +316,7 @@
             this.Controls.Add(this.btn_download);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "Form1";
+            this.Name = "MainForm";
             this.Text = "TMO Scrapper";
             ((System.ComponentModel.ISupportInitialize)(this.numeric_chaptersRangeFrom)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_chaptersRangeTo)).EndInit();

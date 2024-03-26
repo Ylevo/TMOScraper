@@ -1,4 +1,6 @@
 using HtmlAgilityPack;
+using PuppeteerExtraSharp.Plugins.ExtraStealth;
+using PuppeteerExtraSharp;
 using PuppeteerSharp;
 using System.Net;
 using System.Reflection;
@@ -19,7 +21,6 @@ namespace TMOScrapper
         private IBrowser? browser;
         private IResponse? lastResponse;
         private readonly NavigationOptions navigationOptionsDefault = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 6000 };
-        private readonly NavigationOptions navigationOptionsRedirect = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle2 }, Timeout = 5000 };
         private HtmlDocument doc = new();
         private readonly Random random = new();
         private CancellationTokenSource cancellationToken = new();
@@ -68,7 +69,9 @@ namespace TMOScrapper
         private async Task InitializePuppeteer(IProgress<bool> progress)
         {
             await new BrowserFetcher().DownloadAsync();
-            browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true });
+            var extra = new PuppeteerExtra();
+            extra.Use(new StealthPlugin());
+            browser = await extra.LaunchAsync(new LaunchOptions { Headless = true });
             progress.Report(true);
         }
 
@@ -354,7 +357,7 @@ namespace TMOScrapper
             {
                 AddLog("Stopped download.");
             }
-            catch(Exception ex) when (ex is HttpRequestException && continueIfMangoNotFound && ((HttpRequestException)ex).StatusCode == HttpStatusCode.NotFound)
+            catch(Exception ex) when (ex is HttpRequestException exception && continueIfMangoNotFound && exception.StatusCode == HttpStatusCode.NotFound)
             {
                 throw;
             }
@@ -403,7 +406,7 @@ namespace TMOScrapper
                         doc.LoadHtml(await page.GetContentAsync());
                         imgNodes = doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]");
                     }
-                    catch(HttpRequestException exc)
+                    catch(HttpRequestException)
                     {
                         throw;
                     }
@@ -427,11 +430,6 @@ namespace TMOScrapper
             try
             {
                 await page.GoToAsync(chapterLink, navigationOptionsDefault);
-
-                if (page.Url.Contains("/view_uploads/"))
-                {
-                    await page.WaitForNavigationAsync(navigationOptionsRedirect);
-                }
             }
             catch(NavigationException){ }
 
@@ -441,7 +439,7 @@ namespace TMOScrapper
                     AddLog($"Ratelimit hit. Waiting around 3-5 seconds ... ({counter})");
                     AddLog("Try increasing the delay if you get this often.");
                     await Task.Delay(random.Next(3000, 5000));
-                    goto CaseUrl;
+                    break;
 
                 case true when lastResponse.Status == HttpStatusCode.NotFound:
                     throw new HttpRequestException("Error: 404 page not found. Aborting.", null, HttpStatusCode.NotFound);
@@ -453,23 +451,11 @@ namespace TMOScrapper
                     await Task.Delay(random.Next(1000, 2000));
                     break;
 
-                case true when !page.Url.Contains(DomainName + "/viewer/") || !page.Url.Contains("/cascade"):
-                CaseUrl:
-
-                    if (page.Url.Contains(DomainName) || page.Url.Contains("/news/"))
-                    {
-                        chapterLink = page.Url;
-                    }
-                    else
-                    {
-                        AddLog($"Failed getting chapter page. Retrying ... ({counter})");
-                    }
-
-                    chapterLink = Regex.Replace(chapterLink, "https.+/news/", DomainName + "/viewer/");
-                    chapterLink = chapterLink.Replace("paginated", "cascade");
-                    await Task.Delay(500);
+                case true when page.Url.Contains("/view_uploads/"):
+                    string html = await page.GetContentAsync();
+                    string chapterId = html.Substring(html.IndexOf("uniqid: '") + 9, 32);
+                    chapterLink = $"{DomainName}/viewer/{chapterId}/cascade";
                     break;
-
                 default: 
                     goodToGo = true;
                     break;
@@ -591,7 +577,7 @@ namespace TMOScrapper
 
             (string, string)[] uploadLinks = new (string, string)[uploadNodes.Count];
 
-            for (int x = 0; x < uploadNodes.Count(); ++x)
+            for (int x = 0; x < uploadNodes.Count; ++x)
             {
                 uploadLink = uploadNodes.ElementAt(x).Descendants("a").Last().Attributes["href"].Value;
                 groupName = String.Join('+', uploadNodes.ElementAt(x).Descendants("span").First().InnerText.Split(',', StringSplitOptions.TrimEntries));
@@ -630,9 +616,13 @@ namespace TMOScrapper
 
         private async Task ConfigurePuppeteerPage(IPage page)
         {
-            await page.SetExtraHttpHeadersAsync(new Dictionary<string, string> { { "Referer", DomainName } });
-            await page.SetJavaScriptEnabledAsync(true);
+            await page.SetExtraHttpHeadersAsync(new Dictionary<string, string>
+            {
+                { "Referer", DomainName }
+            });
+            await page.SetJavaScriptEnabledAsync(false);
             await page.SetRequestInterceptionAsync(true);
+            await page.SetUserAgentAsync("Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0");
 
             page.Response += (sender, e) =>
             {
@@ -648,17 +638,8 @@ namespace TMOScrapper
                     case ResourceType.StyleSheet:
                     case ResourceType.ImageSet:
                     case ResourceType.Media:
-                        e.Request.AbortAsync();
-                        break;
                     case ResourceType.Script:
-                        if (!page.Url.Contains("/view_uploads/"))
-                        {
-                            e.Request.AbortAsync();
-                        }
-                        else
-                        {
-                            e.Request.ContinueAsync();
-                        }
+                        e.Request.AbortAsync();
                         break;
                     default:
                         e.Request.ContinueAsync();
