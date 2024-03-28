@@ -43,6 +43,7 @@
             this.numeric_chaptersRangeTo = new System.Windows.Forms.NumericUpDown();
             this.checkBox_skipMangos = new System.Windows.Forms.CheckBox();
             this.numeric_skipMangos = new System.Windows.Forms.NumericUpDown();
+            this.btn_selectAllScannies = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_chaptersRangeFrom)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_chaptersRangeTo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numeric_skipMangos)).BeginInit();
@@ -97,7 +98,7 @@
             // btn_scan
             // 
             this.btn_scan.Enabled = false;
-            this.btn_scan.Location = new System.Drawing.Point(21, 153);
+            this.btn_scan.Location = new System.Drawing.Point(21, 166);
             this.btn_scan.Name = "btn_scan";
             this.btn_scan.Size = new System.Drawing.Size(121, 23);
             this.btn_scan.TabIndex = 6;
@@ -288,11 +289,22 @@
             0,
             0});
             // 
+            // btn_selectAllScannies
+            // 
+            this.btn_selectAllScannies.Location = new System.Drawing.Point(21, 195);
+            this.btn_selectAllScannies.Name = "btn_selectAllScannies";
+            this.btn_selectAllScannies.Size = new System.Drawing.Size(121, 23);
+            this.btn_selectAllScannies.TabIndex = 23;
+            this.btn_selectAllScannies.Text = "Select all";
+            this.btn_selectAllScannies.UseVisualStyleBackColor = true;
+            this.btn_selectAllScannies.Click += new System.EventHandler(this.Btn_selectAllScannies_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(557, 430);
+            this.Controls.Add(this.btn_selectAllScannies);
             this.Controls.Add(this.numeric_skipMangos);
             this.Controls.Add(this.checkBox_skipMangos);
             this.Controls.Add(this.numeric_chaptersRangeTo);
@@ -350,5 +362,6 @@
         private NumericUpDown numeric_chaptersRangeTo;
         private CheckBox checkBox_skipMangos;
         private NumericUpDown numeric_skipMangos;
+        private Button btn_selectAllScannies;
     }
 }

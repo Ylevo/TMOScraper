@@ -16,6 +16,7 @@ namespace TMOScrapper
 {
     public partial class MainForm : Form
     {
+        private bool selectGroupsToggle = true;
         private readonly HttpClient httpClient;
         private readonly HtmlWeb webClient;
         private IBrowser? browser;
@@ -87,7 +88,7 @@ namespace TMOScrapper
         {
             if (txtBox_mangoUrl.Text == String.Empty || txtBox_setFolder.Text == string.Empty)
             {
-                MessageBox.Show("Error.", "Scan for the groups first.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("URL and/or folder path is empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -97,7 +98,7 @@ namespace TMOScrapper
                 ToggleUI();
 
                 await GetPage(txtBox_mangoUrl.Text);
-                ListScantardsGroups(doc);
+                ListScanGroups(doc);
             }
             catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
             {
@@ -441,21 +442,42 @@ namespace TMOScrapper
                     await Task.Delay(random.Next(3000, 5000));
                     break;
 
+                case true when lastResponse.Status == HttpStatusCode.Forbidden:
+                    AddLog($"Failed to retrieve the chapter. Status code : {lastResponse.StatusText}.");
+                    AddLog($"Your IP might be banned. Retrying ... ({counter})");
+                    await Task.Delay(random.Next(1000, 2000));
+                    break;
+
                 case true when lastResponse.Status == HttpStatusCode.NotFound:
                     throw new HttpRequestException("Error: 404 page not found. Aborting.", null, HttpStatusCode.NotFound);
 
                 case true when !lastResponse.Ok:
                     AddLog("Last chapter request failed.");
-                    AddLog("Status code : " + lastResponse.Status);
+                    AddLog("Status code : " + lastResponse.StatusText);
                     AddLog($"Retrying ... ({counter})");
                     await Task.Delay(random.Next(1000, 2000));
                     break;
 
                 case true when page.Url.Contains("/view_uploads/"):
                     string html = await page.GetContentAsync();
-                    string chapterId = html.Substring(html.IndexOf("uniqid: '") + 9, 32);
-                    chapterLink = $"{DomainName}/viewer/{chapterId}/cascade";
+                    string chapterId = Regex.Match(html, @"(?<=uniqid:.*'\b)(.*)(?=')").Value;
+
+                    if(chapterId.Length == 0)
+                    {
+                        AddLog($"Failed to retrieve the chapter ID. It might be broken. Status code : {lastResponse.Status}.");
+                        AddLog($"Retrying... ({counter}).");
+                        await Task.Delay(random.Next(500, 1500));
+                    } 
+                    else
+                    {
+                        chapterLink = $"{DomainName}/viewer/{chapterId}/cascade";
+                    }
                     break;
+
+                case true when page.Url.Contains("/paginated"):
+                    chapterLink = Regex.Replace(page.Url, "/paginated.*", "/cascade");
+                    break;
+
                 default: 
                     goodToGo = true;
                     break;
@@ -512,7 +534,7 @@ namespace TMOScrapper
             }
         }
 
-        private void ListScantardsGroups(HtmlDocument doc)
+        private void ListScanGroups(HtmlDocument doc)
         {
             List<string> scanGroups = new();
             var scanGroupsNodes = doc.DocumentNode.SelectNodes(@"//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]
@@ -655,6 +677,7 @@ namespace TMOScrapper
             btn_scan.Enabled = !btn_scan.Enabled;
             btn_download.Enabled = !btn_download.Enabled;
             btn_stop.Enabled = !btn_stop.Enabled;
+            btn_selectAllScannies.Enabled = !btn_selectAllScannies.Enabled;
         }
 
         private void AddLog(string message)
@@ -688,6 +711,20 @@ namespace TMOScrapper
         private void TxtBoxMangoUrl_TextChanged(object sender, EventArgs e)
         {
             listBox_Scannies.Visible = false;
+        }
+
+        private void Btn_selectAllScannies_Click(object sender, EventArgs e)
+        {
+            if (listBox_Scannies.Visible)
+            {
+                for (int i = 0; i < listBox_Scannies.Items.Count; i++)
+                {
+                    listBox_Scannies.SetItemChecked(i, selectGroupsToggle);
+                }
+
+                btn_selectAllScannies.Text = selectGroupsToggle ? "Unselect all" : "Select all";
+                selectGroupsToggle = !selectGroupsToggle;
+            }
         }
 
         protected override void Dispose(bool disposing)
