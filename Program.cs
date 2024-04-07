@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using TMOScrapper.Core;
+
 namespace TMOScrapper
 {
     internal static class Program

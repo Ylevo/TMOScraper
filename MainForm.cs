@@ -11,10 +11,12 @@ using System.Windows.Forms;
 using System.Xml.XPath;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
+using TMOScrapper.Core;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TMOScrapper
 {
-    public partial class MainForm : Form
+    internal partial class MainForm : Form
     {
         private bool selectGroupsToggle = true;
         private readonly HttpClient httpClient;
@@ -156,7 +158,7 @@ namespace TMOScrapper
                 await GetPage(txtBox_mangoUrl.Text);
                 string[] groupName = new string[]
                 { 
-                    doc.DocumentNode.SelectSingleNode("//h1").InnerText.Trim() 
+                    doc.DocumentNode.SelectSingleNode("//h1").InnerText.Trim()
                 };
 
                 var mangos = doc.DocumentNode.SelectNodes("//div[contains(concat(' ',normalize-space(@class),' '),' proyect-item ')]/a");

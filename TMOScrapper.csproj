@@ -12,8 +12,25 @@
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.54" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="PuppeteerExtraSharp" Version="2.0.0" />
     <PackageReference Include="PuppeteerSharp" Version="14.1.0" />
+    <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>
