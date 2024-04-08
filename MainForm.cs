@@ -16,8 +16,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace TMOScrapper
 {
-    internal partial class MainForm : Form
+    public partial class MainForm : Form
     {
+        private readonly IServiceProvider serviceProvider;
         private bool selectGroupsToggle = true;
         private readonly HttpClient httpClient;
         private readonly HtmlWeb webClient;
@@ -26,7 +27,7 @@ namespace TMOScrapper
         private readonly NavigationOptions navigationOptionsDefault = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 6000 };
         private HtmlDocument doc = new();
         private readonly Random random = new();
-        private CancellationTokenSource cancellationToken = new();
+        private CancellationTokenSource? cancellationToken = new();
         private int waitingTimeBetweenChapters = 3000;
         private const string DomainName = "https://visortmo.com";
         private const string FolderNameTemplate = "{0} [{1}] - {2} [{3}]";
@@ -35,8 +36,10 @@ namespace TMOScrapper
             {"Spanish ","es" },
             {"Spanish (LATAM) ","es-la" }
         };
-        public MainForm()
+
+        public MainForm(IServiceProvider serviceProvider)
         {
+            this.serviceProvider = serviceProvider;
             System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)Thread.CurrentThread.CurrentCulture.Clone();
             customCulture.NumberFormat.NumberDecimalSeparator = ".";
             Thread.CurrentThread.CurrentCulture = customCulture;
@@ -67,6 +70,15 @@ namespace TMOScrapper
                 req.Referer = DomainName;
                 return true;
             };
+
+            var t = GetNewScrapper();
+        }
+
+        private ScrapperHandler? GetNewScrapper()
+        {
+            var scrapper =  serviceProvider.GetService(typeof(ScrapperHandler)) as ScrapperHandler;
+            cancellationToken = scrapper?.CancellationTokenSource;
+            return scrapper;
         }
 
         private async Task InitializePuppeteer(IProgress<bool> progress)
@@ -123,21 +135,21 @@ namespace TMOScrapper
             cancellationToken = new CancellationTokenSource();
             listbox_logger.Items.Clear();
             ToggleUI();
+            string pattern =   $@"(?<={DomainName}\/)
+                               ((?<Bulk>library\/(manga|manhua|manhwa|doujinshi|one_shot)\/)
+                               |(?<Single>view_uploads|viewer\/)
+                               |(?<Group>groups\/(.*)proyects))";
+            string pageType = Regex.Match(txtBox_mangoUrl.Text, pattern, RegexOptions.ExplicitCapture).Groups.Values.Where(g => g.Success && g.Name != "0").FirstOrDefault()?.Name ?? "";
 
-            switch (txtBox_mangoUrl.Text)
+            switch (pageType)
             {
-                case string url when url.Contains(DomainName + "/library/manga/")
-                                  || url.Contains(DomainName + "/library/manhua/")
-                                  || url.Contains(DomainName + "/library/manhwa/")
-                                  || url.Contains(DomainName + "/library/doujinshi/")
-                                  || url.Contains(DomainName + "/library/one_shot/"):
+                case "Bulk":
                     await BulkChaptersDownload();
                     break;
-                case string url when url.Contains(DomainName + "/view_uploads/")
-                                  || url.Contains(DomainName + "/viewer/"):
+                case "Single":
                     await SingleChapterDownload();
                     break;
-                case string url when url.Contains(DomainName + "/groups/") && url.Contains("/proyects"):
+                case "Group":
                     await GroupChaptersDownload();
                     break;
                 default:

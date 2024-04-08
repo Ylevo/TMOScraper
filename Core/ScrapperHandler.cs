@@ -8,8 +8,8 @@ using TMOScrapper.Core.PageFetcher;
 
 namespace TMOScrapper.Core
 {
-    enum PageFetcherImplementation { HtmlAgiPageFetcher, PuppeteerPageFetcher };
-    enum ScrapResult { Success, Failure, Banned }
+    public enum PageFetcherImplementation { HtmlAgiPageFetcher, PuppeteerPageFetcher };
+    public enum ScrapResult { Success, PartialSuccess, Failure, Banned, NotFound, Aborted }
     internal class ScrapperHandler
     {
         private readonly IScrapper scrapper;
@@ -18,32 +18,59 @@ namespace TMOScrapper.Core
             { PageFetcherImplementation.HtmlAgiPageFetcher, () => new HtmlAgiPageFetcher() },
             { PageFetcherImplementation.PuppeteerPageFetcher, () => new PuppeteerPageFetcher() }
         };
+
+        public CancellationTokenSource CancellationTokenSource { get; private set; }
         public ScrapperHandler(IScrapper scrapper, bool usePuppeteer = false)
         {
             this.scrapper = scrapper;
+            CancellationTokenSource = new CancellationTokenSource();
             currentImplementation = usePuppeteer ? PageFetcherImplementation.PuppeteerPageFetcher : PageFetcherImplementation.HtmlAgiPageFetcher;
             scrapper.PageFetcher = pageFetcherDict[currentImplementation]();
+            scrapper.CancellationTokenSource = CancellationTokenSource;
         }
 
-        public async Task StartScrapping(string url)
+        public async Task StartScrapping(string url, string[]? groups = null)
         {
-            if (await scrapper.StartScrapping(url) == ScrapResult.Failure && currentImplementation != PageFetcherImplementation.PuppeteerPageFetcher)
+            try
             {
-                SwitchToPuppeteer();
-                await StartScrapping(url);
+                if (await scrapper.StartScrapping(url, groups) == ScrapResult.Failure && currentImplementation != PageFetcherImplementation.PuppeteerPageFetcher)
+                {
+                    SwitchToPuppeteer();
+                    await StartScrapping(url, groups);
+                }
+            }
+            catch (OperationCanceledException ex)
+            {
+                //log
+            }
+            catch (Exception ex)
+            {
+
             }
         }
 
         public async Task<List<string>?> ScrapScanGroups(string url)
         {
-            var result = await scrapper.ScrapScanGroups(url);
-            if (result.result == ScrapResult.Failure && currentImplementation != PageFetcherImplementation.PuppeteerPageFetcher)
+            List<string>? groups = null;
+            try
             {
-                SwitchToPuppeteer();
-                return await ScrapScanGroups(url);
+                var result = await scrapper.ScrapScanGroups(url);
+                if (result.result == ScrapResult.Failure && currentImplementation != PageFetcherImplementation.PuppeteerPageFetcher)
+                {
+                    SwitchToPuppeteer();
+                    return await ScrapScanGroups(url);
+                }
+                groups = result.groups;
             }
+            catch (OperationCanceledException ex)
+            {
+                //log
+            }
+            catch (Exception ex)
+            {
 
-            return result.groups;
+            }
+            return groups;
         }
         public void SwitchToPuppeteer()
         {

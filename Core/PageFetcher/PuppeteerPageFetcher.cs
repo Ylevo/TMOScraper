@@ -10,7 +10,7 @@ namespace TMOScrapper.Core.PageFetcher
     {
         public PuppeteerPageFetcher() { }
 
-        public string GetPage(string url)
+        public async Task<string> GetPage(string url, CancellationToken token, PageType page = PageType.Default)
         {
             return "";
         }

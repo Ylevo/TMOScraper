@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace TMOScrapper.Core.PageFetcher
 {
+    public enum PageType { Default, Chapter }
     public interface IPageFetcher
     {
-        string GetPage(string url);
+        Task<string> GetPage(string url, CancellationToken token, PageType page = PageType.Default);
     }
 }

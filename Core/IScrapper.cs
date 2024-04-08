@@ -11,17 +11,9 @@ namespace TMOScrapper.Core
 {
     internal interface IScrapper
     {
-        
         IPageFetcher? PageFetcher { get; set; }
-        Task<ScrapResult> StartScrapping(string url);
+        CancellationTokenSource? CancellationTokenSource { get; set; }
+        Task<ScrapResult> StartScrapping(string url, string[]? groups = null);
         Task<(ScrapResult result, List<string>? groups)> ScrapScanGroups(string url);
-        /*
-        Task ScrapSingleChapter();
-        Task ScrapBulkChapters();
-        Task ScrapScanGroupChapters();
-        HtmlNodeCollection ParseScanGroups(HtmlDocument doc);
-        SortedDictionary<string, (string, string)[]> GetChaptersLinks(HtmlNodeCollection nodes);
-        SortedDictionary<string, (string, string)[]> GetOneShotLinks(HtmlNodeCollection nodes);
-        HtmlNodeCollection ParseChaptersLinks(HtmlDocument doc);*/
     }
 }
