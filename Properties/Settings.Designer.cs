@@ -34,5 +34,41 @@ namespace TMOScrapper.Properties {
                 this["Domain"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2000")]
+        public int RetryDelay {
+            get {
+                return ((int)(this["RetryDelay"]));
+            }
+            set {
+                this["RetryDelay"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("3000")]
+        public int ChapterDelay {
+            get {
+                return ((int)(this["ChapterDelay"]));
+            }
+            set {
+                this["ChapterDelay"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int MaxRetries {
+            get {
+                return ((int)(this["MaxRetries"]));
+            }
+            set {
+                this["MaxRetries"] = value;
+            }
+        }
     }
 }

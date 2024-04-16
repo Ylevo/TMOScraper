@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using TMOScrapper.Core;
+using Polly.Extensions;
 
 namespace TMOScrapper
 {

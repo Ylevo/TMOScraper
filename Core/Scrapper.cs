@@ -8,6 +8,9 @@ using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using TMOScrapper.Core.PageFetcher;
 using System.Text.RegularExpressions;
 using TMOScrapper.Properties;
+using Polly;
+using Polly.Contrib.WaitAndRetry;
+using System.Security.Policy;
 
 namespace TMOScrapper.Core
 {
@@ -17,13 +20,20 @@ namespace TMOScrapper.Core
         public CancellationTokenSource? CancellationTokenSource { get; set; } = null;
         private readonly string domainName = Settings.Default.Domain;
         private readonly HtmlDocument doc;
+        private ResiliencePipeline retryPipeline;
 
-        public Scrapper(HtmlDocument doc) 
+
+        public Scrapper(HtmlDocument document) 
         {
-            this.doc = doc;
+            doc = document;
+            retryPipeline = SetRetryPipeline();
         }
 
-        public async Task<ScrapResult> StartScrapping(string url, string[]? groups = null)
+        public async Task<ScrapResult> StartScrapping(
+            string url, 
+            string[]? groups = null, 
+            (bool skipChapters, int chapterFrom, int chapterTo)? chapterRange = null,
+            int skipMango = 0)
         {
             string pattern = $@"(?<={domainName}\/)
                                ((?<Bulk>library\/(manga|manhua|manhwa|doujinshi|one_shot)\/)
@@ -34,13 +44,13 @@ namespace TMOScrapper.Core
             switch (pageType)
             {
                 case "Bulk":
-                    result = await ScrapBulkChapters();
+                    result = await ScrapBulkChapters(url, groups, chapterRange);
                     break;
                 case "Single":
-                    result = await ScrapSingleChapter();
+                    result = await ScrapSingleChapter(url);
                     break;
                 case "Group":
-                    result = await ScrapGroupChapters();
+                    result = await ScrapGroupChapters(url, skipMango);
                     break;
                 default:
                     result = ScrapResult.NotFound;
@@ -53,11 +63,10 @@ namespace TMOScrapper.Core
         public async Task<(ScrapResult result, List<string>? groups)> ScrapScanGroups(string url)
         {
             List<string>? scanGroups = null;
-            string html = ""; 
 
             try
             {
-                html = await PageFetcher.GetPage(url, CancellationTokenSource.Token);
+                doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, CancellationTokenSource.Token));
             }
             catch(ScrapException ex)
             {
@@ -65,7 +74,7 @@ namespace TMOScrapper.Core
                 return (ex.ScrapResult, scanGroups);
             }
 
-            var scanGroupsNodes = ParseScanGroups(html);
+            var scanGroupsNodes = ParseScanGroups(doc);
 
             if (scanGroupsNodes == null)
             {
@@ -84,22 +93,22 @@ namespace TMOScrapper.Core
             return (ScrapResult.Success, scanGroups);
         }
 
-        private Task<ScrapResult> ScrapSingleChapter()
+        private Task<ScrapResult> ScrapSingleChapter(string url)
         {
             
         }
 
-        private Task<ScrapResult> ScrapBulkChapters()
+        private Task<ScrapResult> ScrapBulkChapters(string url, string[] groups, (bool skipChapters, int chapterFrom, int chapterTo)? chapterRange, bool groupScrapping = false)
         {
 
         }
 
-        private Task<ScrapResult> ScrapGroupChapters()
+        private Task<ScrapResult> ScrapGroupChapters(string url, int skipMango)
         {
 
         }
 
-       private SortedDictionary<string, (string, string)[]> GetChaptersLinks(HtmlNodeCollection nodes)
+        private SortedDictionary<string, (string, string)[]> GetChaptersLinks(HtmlNodeCollection nodes)
         {
 
         }
@@ -109,25 +118,53 @@ namespace TMOScrapper.Core
 
         }
 
-        private HtmlNodeCollection ParseScanGroups(string html)
+        private HtmlNodeCollection ParseScanGroups(HtmlDocument doc)
         {
-            doc.LoadHtml(html);
             return doc.DocumentNode.SelectNodes(@"//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]
                                                                  //div[1][contains(concat(' ',normalize-space(@class),' '),' text-truncate ')]
                                                                  /span");
         }
         
 
-        private HtmlNodeCollection ParseChaptersLinks(string html)
+        private HtmlNodeCollection ParseChaptersLinks(HtmlDocument doc)
         {
-            doc.LoadHtml(html);
             return doc.DocumentNode.SelectNodes("//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]");
         }
 
-        private HtmlNodeCollection ParseChapterImages(string html)
+        private HtmlNodeCollection ParseChapterImages(HtmlDocument doc)
         {
-            doc.LoadHtml(html);
             return doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]");
+        }
+
+        private ResiliencePipeline SetRetryPipeline()
+        {
+            var retryOptions = new Polly.Retry.RetryStrategyOptions()
+            {
+                ShouldHandle = new PredicateBuilder().Handle<ScrapException>(),
+                BackoffType = DelayBackoffType.Constant,
+                UseJitter = true,
+                MaxRetryAttempts = Settings.Default.MaxRetries,
+                Delay = TimeSpan.FromMilliseconds(Settings.Default.RetryDelay),
+                OnRetry = static args =>
+                {
+                    var exception = args.Outcome.Exception;
+                    if (exception is ScrapException scrapException)
+                    {
+                        switch (scrapException.ScrapResult)
+                        {
+                            case ScrapResult.Banned:
+                            case ScrapResult.NotFound:
+                                args.Outcome.ThrowIfException();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    return default;
+                }
+            };
+            return new ResiliencePipelineBuilder().AddRetry(retryOptions).Build();
         }
 
     }

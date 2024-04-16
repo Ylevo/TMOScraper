@@ -76,8 +76,9 @@ namespace TMOScrapper
 
         private ScrapperHandler? GetNewScrapper()
         {
-            var scrapper =  serviceProvider.GetService(typeof(ScrapperHandler)) as ScrapperHandler;
+            var scrapper = serviceProvider.GetRequiredService<ScrapperHandler>();
             cancellationToken = scrapper?.CancellationTokenSource;
+
             return scrapper;
         }
 

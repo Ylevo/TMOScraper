@@ -13,7 +13,8 @@ namespace TMOScrapper.Core
     {
         IPageFetcher? PageFetcher { get; set; }
         CancellationTokenSource? CancellationTokenSource { get; set; }
-        Task<ScrapResult> StartScrapping(string url, string[]? groups = null);
+        Task<ScrapResult> StartScrapping(string url, string[]? groups = null, (bool skipChapters, int chapterFrom, int chapterTo)? chapterRange = null, int skipMango = 0);
         Task<(ScrapResult result, List<string>? groups)> ScrapScanGroups(string url);
+        
     }
 }

@@ -9,7 +9,7 @@ using TMOScrapper.Core.PageFetcher;
 namespace TMOScrapper.Core
 {
     public enum PageFetcherImplementation { HtmlAgiPageFetcher, PuppeteerPageFetcher };
-    public enum ScrapResult { Success, PartialSuccess, Failure, Banned, NotFound, Aborted }
+    public enum ScrapResult { Success, PartialSuccess, Failure, Banned, NotFound, Aborted, RateLimited }
     internal class ScrapperHandler
     {
         private readonly IScrapper scrapper;
@@ -19,11 +19,11 @@ namespace TMOScrapper.Core
             { PageFetcherImplementation.PuppeteerPageFetcher, () => new PuppeteerPageFetcher() }
         };
 
-        public CancellationTokenSource CancellationTokenSource { get; private set; }
+        public CancellationTokenSource CancellationTokenSource { get; init; }
         public ScrapperHandler(IScrapper scrapper, bool usePuppeteer = false)
         {
             this.scrapper = scrapper;
-            CancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource = new();
             currentImplementation = usePuppeteer ? PageFetcherImplementation.PuppeteerPageFetcher : PageFetcherImplementation.HtmlAgiPageFetcher;
             scrapper.PageFetcher = pageFetcherDict[currentImplementation]();
             scrapper.CancellationTokenSource = CancellationTokenSource;
@@ -39,7 +39,7 @@ namespace TMOScrapper.Core
                     await StartScrapping(url, groups);
                 }
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
                 //log
             }
@@ -62,7 +62,7 @@ namespace TMOScrapper.Core
                 }
                 groups = result.groups;
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
                 //log
             }
