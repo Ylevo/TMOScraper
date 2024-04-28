@@ -9,10 +9,10 @@ using TMOScrapper.Core.PageFetcher;
 namespace TMOScrapper.Core
 {
     public enum PageFetcherImplementation { HtmlAgiPageFetcher, PuppeteerPageFetcher };
-    public enum ScrapResult { Success, PartialSuccess, Failure, Banned, NotFound, Aborted, RateLimited }
+    public enum PageFetchingResult { Success, Failure, Banned, NotFound, Aborted, RateLimited }
     internal class ScrapperHandler
     {
-        private readonly IScrapper scrapper;
+        private readonly Scrapper scrapper;
         private PageFetcherImplementation currentImplementation;
         private Dictionary<PageFetcherImplementation, Func<IPageFetcher?>> pageFetcherDict = new (){
             { PageFetcherImplementation.HtmlAgiPageFetcher, () => new HtmlAgiPageFetcher() },
@@ -20,7 +20,7 @@ namespace TMOScrapper.Core
         };
 
         public CancellationTokenSource CancellationTokenSource { get; init; }
-        public ScrapperHandler(IScrapper scrapper, bool usePuppeteer = false)
+        public ScrapperHandler(Scrapper scrapper, bool usePuppeteer = false)
         {
             this.scrapper = scrapper;
             CancellationTokenSource = new();
@@ -29,14 +29,18 @@ namespace TMOScrapper.Core
             scrapper.CancellationTokenSource = CancellationTokenSource;
         }
 
-        public async Task StartScrapping(string url, string[]? groups = null)
+        public async Task StartScrapping(
+            string url,
+            string[]? groups,
+            (bool skipChapters, int from, int to) chapterRange,
+            int skipMango)
         {
             try
             {
-                if (await scrapper.StartScrapping(url, groups) == ScrapResult.Failure && currentImplementation != PageFetcherImplementation.PuppeteerPageFetcher)
+                if (!await scrapper.ScrapChapters(url, groups, chapterRange, skipMango) && currentImplementation != PageFetcherImplementation.PuppeteerPageFetcher)
                 {
                     SwitchToPuppeteer();
-                    await StartScrapping(url, groups);
+                    await scrapper.ScrapChapters(url, groups, chapterRange, skipMango);
                 }
             }
             catch (OperationCanceledException)
@@ -54,13 +58,13 @@ namespace TMOScrapper.Core
             List<string>? groups = null;
             try
             {
-                var result = await scrapper.ScrapScanGroups(url);
-                if (result.result == ScrapResult.Failure && currentImplementation != PageFetcherImplementation.PuppeteerPageFetcher)
+                var tupleResult = await scrapper.ScrapScanGroups(url);
+                if (!tupleResult.result && currentImplementation != PageFetcherImplementation.PuppeteerPageFetcher)
                 {
                     SwitchToPuppeteer();
                     return await ScrapScanGroups(url);
                 }
-                groups = result.groups;
+                groups = tupleResult.groups;
             }
             catch (OperationCanceledException)
             {

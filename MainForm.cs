@@ -3,16 +3,18 @@ using PuppeteerExtraSharp.Plugins.ExtraStealth;
 using PuppeteerExtraSharp;
 using PuppeteerSharp;
 using System.Net;
-using System.Reflection;
-using System.Security.Policy;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Windows.Forms;
-using System.Xml.XPath;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using System.Windows.Forms.Integration;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using TMOScrapper.Core;
 using Microsoft.Extensions.DependencyInjection;
+using System.Windows.Controls;
+using System.Windows;
+using Brushes = System.Windows.Media.Brushes;
+using FontFamily = System.Windows.Media.FontFamily;
+using Serilog;
+using Serilog.Sinks.RichTextBox.Themes;
 
 namespace TMOScrapper
 {
@@ -37,6 +39,9 @@ namespace TMOScrapper
             {"Spanish (LATAM) ","es-la" }
         };
 
+        private static readonly object loggerSync = new object();
+        private System.Windows.Controls.RichTextBox richTxtBoxLogger;
+
         public MainForm(IServiceProvider serviceProvider)
         {
             this.serviceProvider = serviceProvider;
@@ -45,6 +50,8 @@ namespace TMOScrapper
             Thread.CurrentThread.CurrentCulture = customCulture;
 
             InitializeComponent();
+            AddRichTextBoxLogger();
+
             AddLog("Downloading Chromium ...");
             var progress = new Progress<bool>(value =>
             {
@@ -72,6 +79,35 @@ namespace TMOScrapper
             };
 
             var t = GetNewScrapper();
+        }
+
+        private void AddRichTextBoxLogger()
+        {
+            var richTextBoxHost = new ElementHost
+            {
+                Dock = DockStyle.Fill,
+            };
+            panel_Logger.Controls.Add(richTextBoxHost);
+
+            var wpfRichTextBox = new System.Windows.Controls.RichTextBox
+            {
+                Background = Brushes.White,
+                Foreground = Brushes.Black,
+                IsReadOnly = true,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Margin = new Thickness(0),
+            };
+
+            richTextBoxHost.Child = wpfRichTextBox;
+            richTxtBoxLogger = wpfRichTextBox;
+
+            const string outputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .WriteTo.RichTextBox(wpfRichTextBox, theme: LoggerTheme.MyTheme, outputTemplate: outputTemplate, syncRoot: loggerSync)
+                .CreateLogger();
         }
 
         private ScrapperHandler? GetNewScrapper()
@@ -103,7 +139,7 @@ namespace TMOScrapper
         {
             if (txtBox_mangoUrl.Text == String.Empty || txtBox_setFolder.Text == string.Empty)
             {
-                MessageBox.Show("URL and/or folder path is empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //MessageBox.Show("URL and/or folder path is empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -134,7 +170,7 @@ namespace TMOScrapper
         private async void BtnDownload_Click(object sender, EventArgs e)
         {
             cancellationToken = new CancellationTokenSource();
-            listbox_logger.Items.Clear();
+            //listbox_logger.Items.Clear();
             ToggleUI();
             string pattern =   $@"(?<={DomainName}\/)
                                ((?<Bulk>library\/(manga|manhua|manhwa|doujinshi|one_shot)\/)
@@ -203,7 +239,7 @@ namespace TMOScrapper
                     AddLog("Done with " + mangoTitle);
                     AddLog("Waiting 2000 ms before next mango.");
                     await Task.Delay(2000);
-                    listbox_logger.Items.Clear();
+                    //listbox_logger.Items.Clear();
                 }
 
                 AddLog("Done downloading group mangos.");
@@ -693,7 +729,7 @@ namespace TMOScrapper
 
         private void AddLog(string message)
         {
-            listbox_logger.Items.Insert(0, message);
+            //listbox_logger.Items.Insert(0, message);
         }
 
         private void BtnStop_Click(object sender, EventArgs e)
@@ -704,7 +740,7 @@ namespace TMOScrapper
 
         private string CleanMangoTitle(string filename)
         {
-            string title = string.Join(" ", WebUtility.HtmlDecode(filename).Split(Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).ToArray())).Truncate(40).Trim().Replace(' ', '-');
+            string title = string.Join(" ", WebUtility.HtmlDecode(filename).Split(Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).ToArray())).Trim().Replace(' ', '-');
 
             while (title.Last() == '.')
             {
@@ -754,12 +790,35 @@ namespace TMOScrapper
         }
     }
 
-    public static class StringExt
+    public class LoggerTheme : RichTextBoxConsoleTheme
     {
-        public static string Truncate(this string value, int maxLength)
+        public LoggerTheme(IReadOnlyDictionary<RichTextBoxThemeStyle, RichTextBoxConsoleThemeStyle> styles) : base(styles)
         {
-            if (string.IsNullOrEmpty(value)) return value;
-            return value.Length <= maxLength ? value : value.Substring(0, maxLength);
         }
+
+        public static RichTextBoxConsoleTheme MyTheme { get; } = new RichTextBoxConsoleTheme
+            (
+                new Dictionary<RichTextBoxThemeStyle, RichTextBoxConsoleThemeStyle>
+                {
+                    [RichTextBoxThemeStyle.Text] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Black.ToString() },
+                    [RichTextBoxThemeStyle.SecondaryText] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Black.ToString() },
+                    [RichTextBoxThemeStyle.TertiaryText] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Black.ToString() },
+                    [RichTextBoxThemeStyle.Invalid] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Orange.ToString() },
+                    [RichTextBoxThemeStyle.Null] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Blue.ToString() },
+                    [RichTextBoxThemeStyle.Name] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Black.ToString() },
+                    [RichTextBoxThemeStyle.String] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.DarkCyan.ToString() },
+                    [RichTextBoxThemeStyle.Number] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.DarkMagenta.ToString() },
+                    [RichTextBoxThemeStyle.Boolean] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.DarkBlue.ToString() },
+                    [RichTextBoxThemeStyle.Scalar] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.DarkGreen.ToString() },
+                    [RichTextBoxThemeStyle.LevelVerbose] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Gray.ToString() },
+                    [RichTextBoxThemeStyle.LevelDebug] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Blue.ToString() },
+                    [RichTextBoxThemeStyle.LevelInformation] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Blue.ToString() },
+                    [RichTextBoxThemeStyle.LevelWarning] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Orange.ToString() },
+                    [RichTextBoxThemeStyle.LevelError] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Red.ToString() },
+                    [RichTextBoxThemeStyle.LevelFatal] = new RichTextBoxConsoleThemeStyle { Foreground = Brushes.Red.ToString() },
+                }
+            );
     }
+
+    
 }

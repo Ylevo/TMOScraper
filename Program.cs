@@ -2,6 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using TMOScrapper.Core;
 using Polly.Extensions;
+using Microsoft.Extensions.Logging;
+using TMOScrapper.Utils;
 
 namespace TMOScrapper
 {
@@ -29,8 +31,9 @@ namespace TMOScrapper
         {
             services.AddScoped<MainForm>();
             services.AddTransient<ScrapperHandler>();
-            services.AddTransient<IScrapper, Scrapper>();
+            services.AddTransient<Scrapper>();
             services.AddTransient<HtmlAgilityPack.HtmlDocument>();
+            services.AddScoped<HtmlParser>();
         }
     }
 }
