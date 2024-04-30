@@ -291,6 +291,7 @@
             MaximizeBox = false;
             Name = "MainForm";
             Text = "TMO Scrapper";
+            Shown += MainForm_Shown;
             ((System.ComponentModel.ISupportInitialize)numeric_chaptersRangeFrom).EndInit();
             ((System.ComponentModel.ISupportInitialize)numeric_chaptersRangeTo).EndInit();
             ((System.ComponentModel.ISupportInitialize)numeric_skipMangos).EndInit();

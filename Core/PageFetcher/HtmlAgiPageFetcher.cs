@@ -24,6 +24,11 @@ namespace TMOScrapper.Core.PageFetcher
 
         public HtmlAgiPageFetcher() 
         {
+            webClient.PreRequest += delegate (HttpWebRequest req)
+            {
+                req.Referer = Settings.Default.Domain;
+                return true;
+            };
         }
 
         public async Task<string> GetPage(string url, CancellationToken token, PageType page = PageType.Default)

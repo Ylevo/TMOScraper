@@ -8,15 +8,15 @@ using TMOScrapper.Core.PageFetcher;
 
 namespace TMOScrapper.Core
 {
-    public enum PageFetcherImplementation { HtmlAgiPageFetcher, PuppeteerPageFetcher };
+    public enum PageFetcherImplementation { HtmlAgi, Puppeteer };
     public enum PageFetchingResult { Success, Failure, Banned, NotFound, Aborted, RateLimited }
     internal class ScrapperHandler
     {
         private readonly Scrapper scrapper;
         private PageFetcherImplementation currentImplementation;
-        private Dictionary<PageFetcherImplementation, Func<IPageFetcher?>> pageFetcherDict = new (){
-            { PageFetcherImplementation.HtmlAgiPageFetcher, () => new HtmlAgiPageFetcher() },
-            { PageFetcherImplementation.PuppeteerPageFetcher, () => new PuppeteerPageFetcher() }
+        private readonly Dictionary<PageFetcherImplementation, Func<IPageFetcher>> pageFetcherDict = new (){
+            { PageFetcherImplementation.HtmlAgi, () => new HtmlAgiPageFetcher() },
+            { PageFetcherImplementation.Puppeteer, () => new PuppeteerPageFetcher() }
         };
 
         public CancellationTokenSource CancellationTokenSource { get; init; }
@@ -24,7 +24,7 @@ namespace TMOScrapper.Core
         {
             this.scrapper = scrapper;
             CancellationTokenSource = new();
-            currentImplementation = usePuppeteer ? PageFetcherImplementation.PuppeteerPageFetcher : PageFetcherImplementation.HtmlAgiPageFetcher;
+            currentImplementation = usePuppeteer ? PageFetcherImplementation.Puppeteer : PageFetcherImplementation.HtmlAgi;
             scrapper.PageFetcher = pageFetcherDict[currentImplementation]();
             scrapper.CancellationTokenSource = CancellationTokenSource;
         }
@@ -37,7 +37,7 @@ namespace TMOScrapper.Core
         {
             try
             {
-                if (!await scrapper.ScrapChapters(url, groups, chapterRange, skipMango) && currentImplementation != PageFetcherImplementation.PuppeteerPageFetcher)
+                if (!await scrapper.ScrapChapters(url, groups, chapterRange, skipMango) && currentImplementation != PageFetcherImplementation.Puppeteer)
                 {
                     SwitchToPuppeteer();
                     await scrapper.ScrapChapters(url, groups, chapterRange, skipMango);
@@ -59,7 +59,7 @@ namespace TMOScrapper.Core
             try
             {
                 var tupleResult = await scrapper.ScrapScanGroups(url);
-                if (!tupleResult.result && currentImplementation != PageFetcherImplementation.PuppeteerPageFetcher)
+                if (!tupleResult.result && currentImplementation != PageFetcherImplementation.Puppeteer)
                 {
                     SwitchToPuppeteer();
                     return await ScrapScanGroups(url);
@@ -78,7 +78,7 @@ namespace TMOScrapper.Core
         }
         public void SwitchToPuppeteer()
         {
-            currentImplementation = PageFetcherImplementation.PuppeteerPageFetcher;
+            currentImplementation = PageFetcherImplementation.Puppeteer;
             scrapper.PageFetcher = pageFetcherDict[currentImplementation]();
         }
     }

@@ -6,17 +6,24 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TMOScrapper.Properties;
 
 namespace TMOScrapper.Utils
 {
     public static class Downloader
     {
-        private static readonly HttpClient client = new();
-
+        private static readonly HttpClient client;
+        static Downloader() 
+        {
+            client = new HttpClient(new SocketsHttpHandler() { MaxConnectionsPerServer = 5 });
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0");
+            client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
+        } 
         public static async Task DownloadChapter(string folderPath, HtmlNodeCollection imgNodes, CancellationToken token)
         {
             string url, filename;
             var tasks = new List<Task>();
+            client.DefaultRequestHeaders.Referrer = new Uri(Settings.Default.Domain);
 
             for (int i = 0; i < imgNodes.Count; i++)
             {
