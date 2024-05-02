@@ -9,7 +9,7 @@ using TMOScrapper.Core.PageFetcher;
 namespace TMOScrapper.Core
 {
     public enum PageFetcherImplementation { HtmlAgi, Puppeteer };
-    public enum PageFetchingResult { Success, Failure, Banned, NotFound, Aborted, RateLimited }
+
     internal class ScrapperHandler
     {
         private readonly Scrapper scrapper;
@@ -32,7 +32,7 @@ namespace TMOScrapper.Core
         public async Task StartScrapping(
             string url,
             string[]? groups,
-            (bool skipChapters, int from, int to) chapterRange,
+            (bool skipChapters, decimal from, decimal to) chapterRange,
             int skipMango)
         {
             try
@@ -56,6 +56,7 @@ namespace TMOScrapper.Core
         public async Task<List<string>?> ScrapScanGroups(string url)
         {
             List<string>? groups = null;
+
             try
             {
                 var tupleResult = await scrapper.ScrapScanGroups(url);
@@ -74,6 +75,7 @@ namespace TMOScrapper.Core
             {
 
             }
+
             return groups;
         }
         public void SwitchToPuppeteer()

@@ -50,10 +50,10 @@ namespace TMOScrapper.Core.PageFetcher
             return webClient.StatusCode switch
             {
                 HttpStatusCode.OK => document.ParsedText,
-                HttpStatusCode.Forbidden => throw new PageFetchException(PageFetchingResult.Banned),
-                HttpStatusCode.NotFound => throw new PageFetchException(PageFetchingResult.NotFound),
-                HttpStatusCode.TooManyRequests => throw new PageFetchException(PageFetchingResult.RateLimited),
-                _ => throw new PageFetchException(PageFetchingResult.Failure)
+                HttpStatusCode.Forbidden => throw new PageFetchBannedException(),
+                HttpStatusCode.NotFound => throw new PageFetchNotFoundException(),
+                HttpStatusCode.TooManyRequests => throw new PageFetchRateLimitedException(),
+                _ => throw new PageFetchFailureException(webClient.StatusCode),
             };
         }
 
@@ -70,13 +70,13 @@ namespace TMOScrapper.Core.PageFetcher
                 case HttpStatusCode.OK:
                     break;
                 case HttpStatusCode.Forbidden:
-                    throw new PageFetchException(PageFetchingResult.Banned);
+                    throw new PageFetchBannedException();
                 case HttpStatusCode.NotFound:
-                    throw new PageFetchException(PageFetchingResult.NotFound);
+                    throw new PageFetchNotFoundException();
                 case HttpStatusCode.TooManyRequests:
-                    throw new PageFetchException(PageFetchingResult.RateLimited);
+                    throw new PageFetchRateLimitedException();
                 default:
-                    throw new PageFetchException(PageFetchingResult.Failure);
+                    throw new PageFetchFailureException(webClient.StatusCode);
             }
 
             string returnedUri = webClient.ResponseUri.AbsoluteUri;

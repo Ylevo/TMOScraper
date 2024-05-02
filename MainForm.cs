@@ -24,8 +24,6 @@ namespace TMOScrapper
     {
         private readonly IServiceProvider serviceProvider;
         private bool selectGroupsToggle = true;
-
-        private HtmlDocument doc = new();
         private CancellationTokenSource? cancellationToken;
         private int waitingTimeBetweenChapters = 3000;
 
@@ -42,7 +40,7 @@ namespace TMOScrapper
             AddRichTextBoxLogger();
 
             languageCmbBox.DataSource = new BindingSource(
-                new Dictionary<string, string> { { "Spanish ", "es" }, { "Spanish (LATAM) ", "es-la" } },
+                new Dictionary<string, string> { { "Spanish", "es" }, { "Spanish (LATAM)", "es-la" } },
                 null);
             languageCmbBox.DisplayMember = "Key";
             languageCmbBox.ValueMember = "Value";
@@ -80,10 +78,10 @@ namespace TMOScrapper
                 .CreateLogger();
         }
 
-        private ScrapperHandler? GetNewScrapper()
+        private ScrapperHandler GetNewScrapper()
         {
             var scrapper = serviceProvider.GetRequiredService<ScrapperHandler>();
-            cancellationToken = scrapper?.CancellationTokenSource;
+            cancellationToken = scrapper.CancellationTokenSource;
 
             return scrapper;
         }
@@ -107,65 +105,37 @@ namespace TMOScrapper
         {
             if (txtBox_mangoUrl.Text == String.Empty || txtBox_setFolder.Text == string.Empty)
             {
-                //MessageBox.Show("URL and/or folder path is empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Log.Error("URL and/or folder path is empty.");
                 return;
             }
 
-            try
-            {
-                cancellationToken = new CancellationTokenSource();
-                ToggleUI();
+            ToggleUI();
+            List<string>? groups = await GetNewScrapper().ScrapScanGroups(txtBox_mangoUrl.Text);
 
-                //await GetPage(txtBox_mangoUrl.Text);
-                ListScanGroups(doc);
-            }
-            catch (Exception ex) when (ex is TaskCanceledException || ex is OperationCanceledException)
+            if (groups != null)
             {
-                //AddLog("Cancelled scanning.");
+                listBox_Scannies.Items.Clear();
+                listBox_Scannies.Items.AddRange(groups.ToArray());
+                listBox_Scannies.Visible = true;
             }
-            catch (Exception exc)
-            {
-                //AddLog(exc.Message);
-                //AddLog("Something went wrong.");
-                cancellationToken.Cancel();
-            }
-            finally
-            {
-                ToggleUI();
-            }
+
+            ToggleUI();
         }
 
         private async void BtnDownload_Click(object sender, EventArgs e)
         {
-            cancellationToken = new CancellationTokenSource();
-            //listbox_logger.Items.Clear();
+            var groups = listBox_Scannies.CheckedItems.Cast<string>().ToArray();
+            // clear logger?
             ToggleUI();
 
+            await GetNewScrapper().StartScrapping(
+                txtBox_mangoUrl.Text,
+                groups.Length == 0 ? null : groups,
+                (checkBox_chaptersRange.Checked, numeric_chaptersRangeFrom.Value, numeric_chaptersRangeTo.Value),
+                (int)numeric_skipMangos.Value
+                );
 
             ToggleUI();
-        }
-
-        private void ListScanGroups(HtmlDocument doc)
-        {
-            List<string> scanGroups = new();
-            var scanGroupsNodes = doc.DocumentNode.SelectNodes(@"//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]
-                                                                 //div[1][contains(concat(' ',normalize-space(@class),' '),' text-truncate ')]
-                                                                 /span");
-            if (scanGroupsNodes == null)
-            {
-                throw new Exception("Error: 404 scannies not found. Check your URL.");
-            }
-
-            foreach (var scanGroupNode in scanGroupsNodes)
-            {
-                scanGroups.Add(String.Join('+', scanGroupNode.ParentNode.InnerText.Split(',', StringSplitOptions.TrimEntries)));
-            }
-
-            scanGroups = scanGroups.Distinct().ToList();
-            scanGroups.Sort();
-            listBox_Scannies.Items.Clear();
-            listBox_Scannies.Items.AddRange(scanGroups.ToArray());
-            listBox_Scannies.Visible = true;
         }
 
         private void ToggleUI()
@@ -181,7 +151,7 @@ namespace TMOScrapper
         private void BtnStop_Click(object sender, EventArgs e)
         {
             cancellationToken?.Cancel();
-            //AddLog("Post-natal abortion requested.");
+            Log.Warning("Abortion requested. Aborting ...");
         }
 
         private void TxtBoxDelay_TextChanged(object sender, EventArgs e)

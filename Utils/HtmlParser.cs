@@ -18,6 +18,21 @@ namespace TMOScrapper.Utils
                                                                  /span");
         }
 
+        public virtual string ParseGroupName(HtmlDocument doc)
+        {
+            return doc.DocumentNode.SelectSingleNode("//h1").InnerText.Trim();
+        }
+
+        public virtual string ParseMangoTitleFromMangoPage(HtmlDocument doc)
+        {
+            return doc.DocumentNode.SelectSingleNode("//h2").InnerText;
+        }
+
+        public virtual HtmlNodeCollection ParseGroupMangos(HtmlDocument doc)
+        {
+            return doc.DocumentNode.SelectNodes("//div[contains(concat(' ',normalize-space(@class),' '),' proyect-item ')]/a");
+        }
+
         public virtual HtmlNodeCollection ParseChapterImages(HtmlDocument doc)
         {
             return doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]");
