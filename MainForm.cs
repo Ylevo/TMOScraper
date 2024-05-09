@@ -231,7 +231,7 @@ namespace TMOScrapper
                     Directory.CreateDirectory(mainFolder);
                 }
 
-                currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangaTitle, language, chapterNumber, groupName));
+                currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangaTitle, language, chapterNumber, RemoveForbiddenPathCharacters(groupName)));
 
                 if (Directory.Exists(currentFolder))
                 {
@@ -324,7 +324,7 @@ namespace TMOScrapper
 
                         if (groups.Contains(groupName) || (includeJointGroupsChapters && groups.Any(groupName.Contains)))
                         {
-                            currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, groupName));
+                            currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, RemoveForbiddenPathCharacters(groupName)));
 
                             if (Directory.Exists(currentFolder))
                             {
@@ -689,14 +689,12 @@ namespace TMOScrapper
 
         private string CleanMangoTitle(string filename)
         {
-            string title = string.Join(" ", WebUtility.HtmlDecode(filename).Split(Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).ToArray())).Truncate(40).Trim().Replace(' ', '-');
+            return RemoveForbiddenPathCharacters(filename).TrimEnd('.');
+        }
 
-            while (title.Last() == '.')
-            {
-                title = title.Remove(title.Length - 1, 1);
-            }
-
-            return title;
+        private string RemoveForbiddenPathCharacters(string input)
+        {
+            return string.Join(" ", WebUtility.HtmlDecode(input).Split(Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).ToArray())).Truncate(40).Trim().Replace(' ', '-');
         }
 
         private void TxtBoxDelay_TextChanged(object sender, EventArgs e)
