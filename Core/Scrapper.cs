@@ -1,27 +1,17 @@
-﻿using HtmlAgilityPack;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HtmlDocument = HtmlAgilityPack.HtmlDocument;
-using TMOScrapper.Core.PageFetcher;
-using System.Text.RegularExpressions;
-using TMOScrapper.Properties;
-using Polly;
-using Polly.Contrib.WaitAndRetry;
-using System.Security.Policy;
-using System.Threading;
-using TMOScrapper.Utils;
-using System.Net;
+﻿using Polly;
 using Serilog;
+using System.Text.RegularExpressions;
+using TMOScrapper.Core.PageFetcher;
+using TMOScrapper.Properties;
+using TMOScrapper.Utils;
+using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace TMOScrapper.Core
 {
-    internal class Scrapper
+    public class Scrapper
     {
         public IPageFetcher? PageFetcher { get; set; } = null;
-        public CancellationTokenSource? CancellationTokenSource { get; set; } = null;
+        public CancellationTokenSource? TokenSource { get; init; }
         private HtmlParser parser;
         private readonly string domainName = Settings.Default.Domain;
         private readonly HtmlDocument doc;
@@ -32,8 +22,9 @@ namespace TMOScrapper.Core
         private const string FolderNameTemplate = "{0} [{1}] - {2} [{3}]";
 
 
-        public Scrapper(HtmlDocument document, HtmlParser htmlParser) 
+        public Scrapper(CancellationTokenSource tokenSource, HtmlDocument document, HtmlParser htmlParser) 
         {
+            TokenSource = tokenSource;
             doc = document;
             parser = htmlParser;
             mainFolder = Settings.Default.MainFolder;
@@ -48,10 +39,7 @@ namespace TMOScrapper.Core
             int skipMango)
         {
             toSkipMango = toSkipMango < skipMango ? skipMango : toSkipMango;
-            string pattern = $@"(?<={domainName}\/)
-                               ((?<Bulk>library\/(manga|manhua|manhwa|doujinshi|one_shot)\/)
-                               |(?<Single>view_uploads|viewer\/)
-                               |(?<Group>groups\/(.*)proyects))";
+            string pattern = $@"(?<={domainName}\/)((?<Bulk>library\/(manga|manhua|manhwa|doujinshi|one_shot)\/)|(?<Single>view_uploads|viewer\/)|(?<Group>groups\/(.*)proyects))";
             string pageType = Regex.Match(url, pattern, RegexOptions.ExplicitCapture).Groups.Values.Where(g => g.Success && g.Name != "0").FirstOrDefault()?.Name ?? "";
             switch (pageType)
             {
@@ -67,89 +55,77 @@ namespace TMOScrapper.Core
             }
         }
 
-        public async Task<(bool result, List<string> groups)> ScrapScanGroups(string url)
+        public async Task<(bool result, List<string>? groups)> ScrapScanGroups(string url)
         {
-            List<string> scanGroups = new();
-
             try
             {
-                doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, CancellationTokenSource.Token));
+                doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
             }
             catch(PageFetchException ex)
             {
-                //log
-                return (false, scanGroups);
+                Log.Error(ex.Message);
+                return (false, null);
             }
 
-            var scanGroupsNodes = parser.ParseScanGroups(doc);
+            List<string> scanGroups = parser.ParseScanGroups(doc);
 
-            if (scanGroupsNodes == null)
+            if (scanGroups == null || scanGroups.Count == 0)
             {
                 Log.Error("404 scannies not found. Check your URL.");
-                return (false, scanGroups);
+                return (false, null);
             }
-
-            foreach (var scanGroupNode in scanGroupsNodes)
-            {
-                scanGroups.Add(String.Join('+', scanGroupNode.ParentNode.InnerText.Split(',', StringSplitOptions.TrimEntries)));
-            }
-
-            scanGroups = scanGroups.Distinct().ToList();
-            scanGroups.Sort();
 
             return (true, scanGroups);
         }
 
         public async Task<bool> ScrapSingleChapter(string url)
         {
-            string mangaTitle,
+            string mangoTitle,
                 chapterNumber,
                 groupName,
                 currentFolder = "";
-            HtmlNodeCollection imgNodes;
+            List<string> imgUrls;
 
             try
             {
-                //AddLog("Downloading single chapter.");
-                doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token, PageType.Chapter); }, CancellationTokenSource.Token));
+                Log.Information("Downloading single chapter.");
+                doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token, PageType.Chapter); }, TokenSource.Token));
 
-                var headerWithChapNumberAndGroups = doc.DocumentNode.SelectSingleNode("//h2");
-                chapterNumber = doc.DocumentNode.SelectSingleNode("//h4").InnerText.Contains("ONE SHOT") ? "000"
-                                : "c" + parser.ParseAndPadChapterNumber(headerWithChapNumberAndGroups.InnerText.Substring(9).Trim());
-                groupName = String.Join('+', headerWithChapNumberAndGroups.Elements("a").Select(d => d.InnerText).ToArray());
-                mangaTitle = parser.CleanMangoTitle(doc.DocumentNode.SelectSingleNode("//h1").InnerText);
-                imgNodes = parser.ParseChapterImages(doc);
+                chapterNumber = parser.ParseChapterNumberFromChapterPage(doc);
+                groupName = parser.ParseGroupNameFromChapterPage(doc);
+                mangoTitle = parser.ParseMangoTitleFromChapterPage(doc);
+                imgUrls = parser.ParseChapterImages(doc);
 
                 if (Settings.Default.SubFolder)
                 {
-                    mainFolder = Path.Combine(mainFolder, mangaTitle);
+                    mainFolder = Path.Combine(mainFolder, mangoTitle);
                     Directory.CreateDirectory(mainFolder);
                 }
 
-                currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangaTitle, language, chapterNumber, groupName));
+                currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, groupName));
 
                 if (Directory.Exists(currentFolder))
                 {
-                    //AddLog("Skipping chapter " + chapterNumber + " by '" + groupName + "'. Folder already exists.");
+                    Log.Warning($"Skipping chapter {chapterNumber} by \"{groupName}\". Folder already exists.");
                 }
                 else
                 {
                     Directory.CreateDirectory(currentFolder);
 
-                    //AddLog("Downloading chapter " + chapterNumber + " by '" + groupName + "'");
-                    await Downloader.DownloadChapter(currentFolder, imgNodes, CancellationTokenSource.Token);
-                    //AddLog("Done downloading chapter " + chapterNumber + " by '" + groupName + "'");
+                    Log.Information($"Download chapter {chapterNumber} by \"{groupName}\"");
+                    await Downloader.DownloadChapter(currentFolder, imgUrls, TokenSource.Token);
+                    Log.Information($"Done downloading chapter {chapterNumber} by \"{groupName}\"");
                 }
                 return true;
             }
             catch (PageFetchException ex)
             {
-                //log
+                Log.Error(ex.Message);
                 return false;
             }
             finally
             {
-                if (CancellationTokenSource.IsCancellationRequested && currentFolder != "")
+                if (TokenSource.IsCancellationRequested && currentFolder != "" && Directory.Exists(currentFolder))
                 {
                     Directory.Delete(currentFolder, true);
                 }
@@ -163,7 +139,7 @@ namespace TMOScrapper.Core
                currentFolder = "";
             bool actuallyDidSomething = false,
                 isOneShot = url.Contains("/one_shot/");
-            HtmlNodeCollection imgNodes;
+            List<string> imgUrls;
 
             try
             {
@@ -173,8 +149,8 @@ namespace TMOScrapper.Core
                     return true;
                 }
 
-                doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, CancellationTokenSource.Token));
-                mangoTitle = parser.CleanMangoTitle(parser.ParseMangoTitleFromMangoPage(doc));
+                doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
+                mangoTitle = parser.ParseMangoTitleFromMangoPage(doc);
 
                 Log.Information($"Scrapping chapters of \"{mangoTitle}\"");
 
@@ -204,7 +180,7 @@ namespace TMOScrapper.Core
                     {
                         currentFolder = "";
 
-                        CancellationTokenSource.Token.ThrowIfCancellationRequested();
+                        TokenSource.Token.ThrowIfCancellationRequested();
 
                         if (groups.Contains(groupName) || (groupScrapping && groups.Any(groupName.Contains)))
                         {
@@ -216,12 +192,12 @@ namespace TMOScrapper.Core
                                 continue;
                             }
 
-                            doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(chapterLink, token, PageType.Chapter); }, CancellationTokenSource.Token));
-                            imgNodes = parser.ParseChapterImages(doc);
+                            doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(chapterLink, token, PageType.Chapter); }, TokenSource.Token));
+                            imgUrls = parser.ParseChapterImages(doc);
                             Directory.CreateDirectory(currentFolder);
 
                             Log.Information($"Download chapter {chapterNumber} by \"{groupName}\"");
-                            await Downloader.DownloadChapter(currentFolder, imgNodes, CancellationTokenSource.Token);
+                            await Downloader.DownloadChapter(currentFolder, imgUrls, TokenSource.Token);
                             Log.Information($"Done downloading chapter {chapterNumber} by \"{groupName}\"");
 
                             Log.Information($"Waiing {Settings.Default.ChapterDelay} ms ...");
@@ -243,6 +219,7 @@ namespace TMOScrapper.Core
             }
             catch (PageFetchException ex) when (ex is PageFetchNotFoundException && groupScrapping)
             {
+                Log.Error(ex.Message);
                 return true;
             }
             catch (PageFetchException ex)
@@ -252,7 +229,7 @@ namespace TMOScrapper.Core
             }
             finally
             {
-                if (CancellationTokenSource.IsCancellationRequested && currentFolder != "")
+                if (TokenSource.IsCancellationRequested && currentFolder != "" && Directory.Exists(currentFolder))
                 {
                     Directory.Delete(currentFolder, true);
                 }
@@ -261,13 +238,12 @@ namespace TMOScrapper.Core
 
         public async Task<bool> ScrapGroupChapters(string url, int skipMango, (bool skipChapters, decimal from, decimal to) chapterRange)
         {
-            string mangoUrl;
             int skippedMangos = 0;
             try
             {
                 skipMango = toSkipMango > skipMango ? toSkipMango : skipMango;
                 toSkipMango = skipMango;
-                doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, CancellationTokenSource.Token));
+                doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
                 string[] groupName = new string[]
                 {
                     parser.ParseGroupName(doc)
@@ -275,20 +251,19 @@ namespace TMOScrapper.Core
                 var mangos = parser.ParseGroupMangos(doc);
                 Log.Information($"Scrapping chapters by \"{groupName[0]}\"");
 
-                foreach (var mango in mangos)
+                foreach (string mangoUrl in mangos)
                 {
                     if (skippedMangos++ < skipMango)
                     {
                         continue;
                     }
-                    mangoUrl = mango.Attributes["href"].Value;
-                    if (await ScrapBulkChapters(url, groupName, chapterRange, true))
+                    if (await ScrapBulkChapters(mangoUrl, groupName, chapterRange, true))
                     {
                         return false;
                     }
 
                     toSkipMango++;
-                    CancellationTokenSource.Token.ThrowIfCancellationRequested();
+                    TokenSource.Token.ThrowIfCancellationRequested();
                     Log.Information("Waiting 2 sec before next mango.");
                     await Task.Delay(2000);
                 }

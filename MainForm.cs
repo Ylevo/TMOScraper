@@ -75,13 +75,20 @@ namespace TMOScrapper
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .WriteTo.RichTextBox(wpfRichTextBox, theme: LoggerTheme.MyTheme, outputTemplate: outputTemplate, syncRoot: loggerSync)
+                .WriteTo.File(
+                "Logs/log.txt", 
+                outputTemplate: outputTemplate, 
+                fileSizeLimitBytes: 50000000, 
+                rollingInterval: RollingInterval.Day, 
+                rollOnFileSizeLimit: true,
+                retainedFileTimeLimit: TimeSpan.FromDays(7))
                 .CreateLogger();
         }
 
         private ScrapperHandler GetNewScrapper()
         {
             var scrapper = serviceProvider.GetRequiredService<ScrapperHandler>();
-            cancellationToken = scrapper.CancellationTokenSource;
+            cancellationToken = scrapper.GetTokenSource();
 
             return scrapper;
         }

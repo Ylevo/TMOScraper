@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace TMOScrapper.Core.PageFetcher
 {
-    internal class PuppeteerPageFetcher : IPageFetcher
+    public class PuppeteerPageFetcher : IPageFetcher
     {
         private static IBrowser? browser = null;
         private readonly NavigationOptions navigationOptionsDefault = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 6000 };

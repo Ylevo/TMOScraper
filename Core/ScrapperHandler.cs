@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using TMOScrapper.Core.PageFetcher;
+using TMOScrapper.Properties;
 
 namespace TMOScrapper.Core
 {
@@ -18,15 +20,16 @@ namespace TMOScrapper.Core
             { PageFetcherImplementation.HtmlAgi, () => new HtmlAgiPageFetcher() },
             { PageFetcherImplementation.Puppeteer, () => new PuppeteerPageFetcher() }
         };
-
-        public CancellationTokenSource CancellationTokenSource { get; init; }
-        public ScrapperHandler(Scrapper scrapper, bool usePuppeteer = false)
+        public ScrapperHandler(Scrapper scrapper)
         {
             this.scrapper = scrapper;
-            CancellationTokenSource = new();
-            currentImplementation = usePuppeteer ? PageFetcherImplementation.Puppeteer : PageFetcherImplementation.HtmlAgi;
+            currentImplementation = Settings.Default.AlwaysUsePuppeteer ? PageFetcherImplementation.Puppeteer : PageFetcherImplementation.HtmlAgi;
             scrapper.PageFetcher = pageFetcherDict[currentImplementation]();
-            scrapper.CancellationTokenSource = CancellationTokenSource;
+        }
+
+        public CancellationTokenSource GetTokenSource()
+        {
+            return scrapper.TokenSource;
         }
 
         public async Task StartScrapping(
@@ -45,11 +48,12 @@ namespace TMOScrapper.Core
             }
             catch (OperationCanceledException)
             {
-                //log
+                Log.Information("Aborted scrapping.");
             }
             catch (Exception ex)
             {
-
+                Log.Error($"An unexpected error occurred : {ex.Message}");
+                Log.Error($"Stacktrace : {ex.StackTrace} ");
             }
         }
 
@@ -69,11 +73,12 @@ namespace TMOScrapper.Core
             }
             catch (OperationCanceledException)
             {
-                //log
+                Log.Information("Aborted scrapping.");
             }
             catch (Exception ex)
             {
-
+                Log.Error($"An unexpected error occurred : {ex.Message}");
+                Log.Error($"Stacktrace : {ex.StackTrace} ");
             }
 
             return groups;

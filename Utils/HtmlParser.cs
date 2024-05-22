@@ -4,38 +4,62 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace TMOScrapper.Utils
 {
     public class HtmlParser
     {
-        public virtual HtmlNodeCollection ParseScanGroups(HtmlDocument doc)
+        private static readonly char[] forbiddenPathCharacters = Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).Union(new char[] { '+' }).ToArray();
+
+        public virtual List<string> ParseScanGroups(HtmlDocument doc)
         {
-            return doc.DocumentNode.SelectNodes(@"//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]
+            var nodes = doc.DocumentNode.SelectNodes(@"//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]
                                                                  //div[1][contains(concat(' ',normalize-space(@class),' '),' text-truncate ')]
                                                                  /span");
+            List<string> groups = nodes.Select(n => String.Join('+', n.ParentNode.InnerText.Split(',', StringSplitOptions.TrimEntries).Select(g => RemoveForbbidenPathCharacters(g)))).Distinct().ToList();
+            groups.Sort();
+
+            return groups;
         }
 
         public virtual string ParseGroupName(HtmlDocument doc)
         {
-            return doc.DocumentNode.SelectSingleNode("//h1").InnerText.Trim();
+            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//h1").InnerText);
         }
 
         public virtual string ParseMangoTitleFromMangoPage(HtmlDocument doc)
         {
-            return doc.DocumentNode.SelectSingleNode("//h2").InnerText;
+            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//h2").InnerText);
         }
 
-        public virtual HtmlNodeCollection ParseGroupMangos(HtmlDocument doc)
+        public virtual string ParseMangoTitleFromChapterPage(HtmlDocument doc)
         {
-            return doc.DocumentNode.SelectNodes("//div[contains(concat(' ',normalize-space(@class),' '),' proyect-item ')]/a");
+            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//h1").InnerText);
         }
 
-        public virtual HtmlNodeCollection ParseChapterImages(HtmlDocument doc)
+        public virtual string ParseChapterNumberFromChapterPage(HtmlDocument doc)
         {
-            return doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]");
+            return doc.DocumentNode.SelectSingleNode("//h4").InnerText.Contains("ONE SHOT") ? "000"
+                                : "c" + ParseAndPadChapterNumber(doc.DocumentNode.SelectSingleNode("//h2").InnerText.Trim());
+        }
+
+        public virtual string ParseGroupNameFromChapterPage(HtmlDocument doc)
+        {
+            return String.Join('+', doc.DocumentNode.SelectSingleNode("//h2").Elements("a").Select(d => RemoveForbbidenPathCharacters(d.InnerText)).ToArray());
+        }
+
+        public virtual List<string> ParseGroupMangos(HtmlDocument doc)
+        {
+            return doc.DocumentNode.SelectNodes("//div[contains(concat(' ',normalize-space(@class),' '),' proyect-item ')]/a").Select(m => m.Attributes["href"].Value.Trim()).ToList();
+        }
+
+        public virtual List<string> ParseChapterImages(HtmlDocument doc)
+        {
+            return doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]").Select(img => img.Attributes["data-src"].Value.Trim()).ToList();
         }
 
         public virtual SortedDictionary<string, (string, string)[]> ParseChaptersLinks(HtmlDocument doc)
@@ -47,7 +71,7 @@ namespace TMOScrapper.Utils
 
             for (int i = 0; i < chaptersNodes.Count; ++i)
             {
-                chapterNumber = ParseAndPadChapterNumber(chaptersNodes[i].Descendants("a").First().InnerText.Substring(9).Trim());
+                chapterNumber = ParseAndPadChapterNumber(chaptersNodes[i].Descendants("a").First().InnerText.Trim());
 
                 uploadedChaptersNodes = chaptersNodes[i].Descendants("li");
                 (string, string)[] uploadedChapters = new (string, string)[uploadedChaptersNodes.Count()];
@@ -55,7 +79,7 @@ namespace TMOScrapper.Utils
                 for (int x = 0; x < uploadedChaptersNodes.Count(); ++x)
                 {
                     uploadedChapterLink = uploadedChaptersNodes.ElementAt(x).Descendants("a").Last().Attributes["href"].Value;
-                    groupName = String.Join('+', uploadedChaptersNodes.ElementAt(x).Descendants("span").First().InnerText.Split(',', StringSplitOptions.TrimEntries));
+                    groupName = String.Join('+', uploadedChaptersNodes.ElementAt(x).Descendants("span").First().InnerText.Split(',', StringSplitOptions.TrimEntries).Select(g => RemoveForbbidenPathCharacters(g)));
                     uploadedChapters[x] = (groupName, uploadedChapterLink);
                 }
 
@@ -83,7 +107,7 @@ namespace TMOScrapper.Utils
             for (int x = 0; x < uploadNodes.Count; ++x)
             {
                 uploadLink = uploadNodes.ElementAt(x).Descendants("a").Last().Attributes["href"].Value;
-                groupName = String.Join('+', uploadNodes.ElementAt(x).Descendants("span").First().InnerText.Split(',', StringSplitOptions.TrimEntries));
+                groupName = String.Join('+', uploadNodes.ElementAt(x).Descendants("span").First().InnerText.Split(',', StringSplitOptions.TrimEntries).Select(g => RemoveForbbidenPathCharacters(g)));
                 uploadLinks[x] = (groupName, uploadLink);
             }
 
@@ -94,39 +118,15 @@ namespace TMOScrapper.Utils
 
         public virtual string ParseAndPadChapterNumber(string chapterNumber)
         {
-            chapterNumber = chapterNumber.Substring(0, chapterNumber.IndexOf('.') + 3);
-            string split = chapterNumber.Split('.').Last();
-
-            if (int.Parse(split) > 0)
-            {
-                if (split.Contains('0'))
-                {
-                    split = split.Replace("0", "");
-                    chapterNumber = (chapterNumber.Remove(chapterNumber.IndexOf(".") + 1) + split).PadLeft(5, '0');
-                }
-                else
-                {
-                    chapterNumber = chapterNumber.PadLeft(6, '0');
-                }
-            }
-            else
-            {
-                chapterNumber = chapterNumber.Substring(0, chapterNumber.IndexOf(".")).PadLeft(3, '0');
-            }
-
-            return chapterNumber;
+            chapterNumber = Regex.Match(chapterNumber, "(?<=Capítulo )(\\d+.\\d+)").Value;
+            var splits = chapterNumber.Split('.');
+            return splits[0].PadLeft(3, '0') + (int.Parse(splits[1]) > 0 ? ("." + splits[1].Replace("0", "")) : "");
         }
 
-        public virtual string CleanMangoTitle(string filename)
+        public virtual string RemoveForbbidenPathCharacters(string filename)
         {
-            string title = string.Join(" ", WebUtility.HtmlDecode(filename).Split(Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).ToArray())).Truncate(40).Trim().Replace(' ', '-');
-
-            while (title.Last() == '.')
-            {
-                title = title.Remove(title.Length - 1, 1);
-            }
-
-            return title;
+            // Split the string using forbidden characters to remove them, join them with a space as delimiter, truncate to 40, trim and remove excessive spaces
+            return Regex.Replace(string.Join(" ", WebUtility.HtmlDecode(filename).Split(forbiddenPathCharacters)).Truncate(40).Trim(new char[] { ' ', '.' }), @"\s+", " ");
         }
     }
 

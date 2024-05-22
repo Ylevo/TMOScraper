@@ -14,10 +14,11 @@ using System.Threading.Tasks;
 using TMOScrapper.Properties;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
+using Serilog;
 
 namespace TMOScrapper.Core.PageFetcher
 {
-    internal class HtmlAgiPageFetcher : IPageFetcher
+    public class HtmlAgiPageFetcher : IPageFetcher
     {
         private HtmlDocument document = new();
         private readonly HtmlWeb webClient = new();
@@ -35,17 +36,18 @@ namespace TMOScrapper.Core.PageFetcher
         {
             return page switch
             {
-                PageType.Default => await GetDefault(url, token),
+                PageType.Default => GetDefault(url, token),
                 PageType.Chapter => await GetChapter(url, token),
                 _ => "",
             };
         }
 
-        private async Task<string> GetDefault(string url, CancellationToken token)
+        private string GetDefault(string url, CancellationToken token)
         {
-
             token.ThrowIfCancellationRequested();
-            document = await webClient.LoadFromWebAsync(url, token);
+
+            // LoadFromWebAsync has terrible implementation for some reason
+            document = webClient.Load(url);
 
             return webClient.StatusCode switch
             {
@@ -63,7 +65,7 @@ namespace TMOScrapper.Core.PageFetcher
 
             token.ThrowIfCancellationRequested();
 
-            document = await webClient.LoadFromWebAsync(url, token);
+            document = webClient.Load(url);
 
             switch (webClient.StatusCode)
             {
@@ -86,7 +88,8 @@ namespace TMOScrapper.Core.PageFetcher
                 string chapterId = Regex.Match(document.ParsedText, @"(?<=uniqid:.*'\b)(.*)(?=')").Value;
                 if (chapterId.Length == 0)
                 {
-                    // log
+                    Log.Error("Could not retrieve chapter id to fetch the chapter page.");
+                    throw new PageFetchFailureException(webClient.StatusCode);
                 }
                 else
                 {
