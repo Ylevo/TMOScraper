@@ -32,9 +32,9 @@ namespace TMOScrapper.Core.PageFetcher
             };
         }
 
-        public async Task<string> GetPage(string url, CancellationToken token, PageType page = PageType.Default)
+        public async Task<string> GetPage(string url, CancellationToken token, PageType type = PageType.Default)
         {
-            return page switch
+            return type switch
             {
                 PageType.Default => GetDefault(url, token),
                 PageType.Chapter => await GetChapter(url, token),

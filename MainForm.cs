@@ -75,13 +75,13 @@ namespace TMOScrapper
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .WriteTo.RichTextBox(wpfRichTextBox, theme: LoggerTheme.MyTheme, outputTemplate: outputTemplate, syncRoot: loggerSync)
-                .WriteTo.File(
+                /*.WriteTo.File(
                 "Logs/log.txt", 
                 outputTemplate: outputTemplate, 
                 fileSizeLimitBytes: 50000000, 
                 rollingInterval: RollingInterval.Day, 
                 rollOnFileSizeLimit: true,
-                retainedFileTimeLimit: TimeSpan.FromDays(7))
+                retainedFileTimeLimit: TimeSpan.FromDays(7))*/
                 .CreateLogger();
         }
 
@@ -92,7 +92,7 @@ namespace TMOScrapper
 
             return scrapper;
         }
-        
+
         private async void MainForm_Shown(object sender, EventArgs e)
         {
             await PuppeteerPageFetcher.InitializePuppeteer();
@@ -161,11 +161,6 @@ namespace TMOScrapper
             Log.Warning("Abortion requested. Aborting ...");
         }
 
-        private void TxtBoxDelay_TextChanged(object sender, EventArgs e)
-        {
-            waitingTimeBetweenChapters = int.TryParse(txtBox_Delay.Text, out waitingTimeBetweenChapters) ? waitingTimeBetweenChapters : 3000;
-        }
-
         private void TxtBoxMangoUrl_TextChanged(object sender, EventArgs e)
         {
             listBox_Scannies.Visible = false;
@@ -197,6 +192,11 @@ namespace TMOScrapper
             }
 
             base.Dispose(disposing);
+        }
+
+        private void MenuItemOptions_Click(object sender, EventArgs e)
+        {
+            new OptionsForm().ShowDialog(this);
         }
     }
 

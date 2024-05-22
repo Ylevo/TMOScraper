@@ -85,7 +85,7 @@ namespace TMOScrapper.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\")]
         public string MainFolder {
             get {
                 return ((string)(this["MainFolder"]));
@@ -116,6 +116,42 @@ namespace TMOScrapper.Properties {
             }
             set {
                 this["AlwaysUsePuppeteer"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool ConvertImages {
+            get {
+                return ((bool)(this["ConvertImages"]));
+            }
+            set {
+                this["ConvertImages"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("PNG")]
+        public string ConvertFormat {
+            get {
+                return ((string)(this["ConvertFormat"]));
+            }
+            set {
+                this["ConvertFormat"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CropImages {
+            get {
+                return ((bool)(this["CropImages"]));
+            }
+            set {
+                this["CropImages"] = value;
             }
         }
     }
