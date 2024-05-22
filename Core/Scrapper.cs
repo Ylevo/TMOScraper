@@ -12,7 +12,6 @@ namespace TMOScrapper.Core
     {
         public IPageFetcher? PageFetcher { get; set; } = null;
         public CancellationTokenSource? TokenSource { get; init; }
-        private HtmlParser parser;
         private readonly string domainName = Settings.Default.Domain;
         private readonly HtmlDocument doc;
         private ResiliencePipeline retryPipeline;
@@ -22,11 +21,10 @@ namespace TMOScrapper.Core
         private const string FolderNameTemplate = "{0} [{1}] - {2} [{3}]";
 
 
-        public Scrapper(CancellationTokenSource tokenSource, HtmlDocument document, HtmlParser htmlParser) 
+        public Scrapper(CancellationTokenSource tokenSource, HtmlDocument document) 
         {
             TokenSource = tokenSource;
             doc = document;
-            parser = htmlParser;
             mainFolder = Settings.Default.MainFolder;
             language = Settings.Default.Language;
             retryPipeline = SetRetryPipeline();
@@ -67,7 +65,7 @@ namespace TMOScrapper.Core
                 return (false, null);
             }
 
-            List<string> scanGroups = parser.ParseScanGroups(doc);
+            List<string> scanGroups = HtmlParser.ParseScanGroups(doc);
 
             if (scanGroups == null || scanGroups.Count == 0)
             {
@@ -91,10 +89,10 @@ namespace TMOScrapper.Core
                 Log.Information("Downloading single chapter.");
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token, PageType.Chapter); }, TokenSource.Token));
 
-                chapterNumber = parser.ParseChapterNumberFromChapterPage(doc);
-                groupName = parser.ParseGroupNameFromChapterPage(doc);
-                mangoTitle = parser.ParseMangoTitleFromChapterPage(doc);
-                imgUrls = parser.ParseChapterImages(doc);
+                chapterNumber = HtmlParser.ParseChapterNumberFromChapterPage(doc);
+                groupName = HtmlParser.ParseGroupNameFromChapterPage(doc);
+                mangoTitle = HtmlParser.ParseMangoTitleFromChapterPage(doc);
+                imgUrls = HtmlParser.ParseChapterImages(doc);
 
                 if (Settings.Default.SubFolder)
                 {
@@ -150,11 +148,11 @@ namespace TMOScrapper.Core
                 }
 
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
-                mangoTitle = parser.ParseMangoTitleFromMangoPage(doc);
+                mangoTitle = HtmlParser.ParseMangoTitleFromMangoPage(doc);
 
                 Log.Information($"Scrapping chapters of \"{mangoTitle}\"");
 
-                SortedDictionary<string, (string groupName, string chapterLink)[]> chapters = isOneShot ? parser.ParseOneShotLinks(doc) : parser.ParseChaptersLinks(doc);
+                SortedDictionary<string, (string groupName, string chapterLink)[]> chapters = isOneShot ? HtmlParser.ParseOneShotLinks(doc) : HtmlParser.ParseChaptersLinks(doc);
 
                 if (chapterRange.skipChapters && !isOneShot)
                 {
@@ -193,7 +191,7 @@ namespace TMOScrapper.Core
                             }
 
                             doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(chapterLink, token, PageType.Chapter); }, TokenSource.Token));
-                            imgUrls = parser.ParseChapterImages(doc);
+                            imgUrls = HtmlParser.ParseChapterImages(doc);
                             Directory.CreateDirectory(currentFolder);
 
                             Log.Information($"Download chapter {chapterNumber} by \"{groupName}\"");
@@ -246,9 +244,9 @@ namespace TMOScrapper.Core
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
                 string[] groupName = new string[]
                 {
-                    parser.ParseGroupName(doc)
+                    HtmlParser.ParseGroupName(doc)
                 };
-                var mangos = parser.ParseGroupMangos(doc);
+                var mangos = HtmlParser.ParseGroupMangos(doc);
                 Log.Information($"Scrapping chapters by \"{groupName[0]}\"");
 
                 foreach (string mangoUrl in mangos)

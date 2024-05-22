@@ -11,11 +11,11 @@ using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace TMOScrapper.Utils
 {
-    public class HtmlParser
+    public static class HtmlParser
     {
         private static readonly char[] forbiddenPathCharacters = Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).Union(new char[] { '+' }).ToArray();
 
-        public virtual List<string> ParseScanGroups(HtmlDocument doc)
+        public static List<string> ParseScanGroups(HtmlDocument doc)
         {
             var nodes = doc.DocumentNode.SelectNodes(@"//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]
                                                                  //div[1][contains(concat(' ',normalize-space(@class),' '),' text-truncate ')]
@@ -26,43 +26,43 @@ namespace TMOScrapper.Utils
             return groups;
         }
 
-        public virtual string ParseGroupName(HtmlDocument doc)
+        public static string ParseGroupName(HtmlDocument doc)
         {
             return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//h1").InnerText);
         }
 
-        public virtual string ParseMangoTitleFromMangoPage(HtmlDocument doc)
+        public static string ParseMangoTitleFromMangoPage(HtmlDocument doc)
         {
             return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//h2").InnerText);
         }
 
-        public virtual string ParseMangoTitleFromChapterPage(HtmlDocument doc)
+        public static string ParseMangoTitleFromChapterPage(HtmlDocument doc)
         {
             return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//h1").InnerText);
         }
 
-        public virtual string ParseChapterNumberFromChapterPage(HtmlDocument doc)
+        public static string ParseChapterNumberFromChapterPage(HtmlDocument doc)
         {
             return doc.DocumentNode.SelectSingleNode("//h4").InnerText.Contains("ONE SHOT") ? "000"
                                 : "c" + ParseAndPadChapterNumber(doc.DocumentNode.SelectSingleNode("//h2").InnerText.Trim());
         }
 
-        public virtual string ParseGroupNameFromChapterPage(HtmlDocument doc)
+        public static string ParseGroupNameFromChapterPage(HtmlDocument doc)
         {
             return String.Join('+', doc.DocumentNode.SelectSingleNode("//h2").Elements("a").Select(d => RemoveForbbidenPathCharacters(d.InnerText)).ToArray());
         }
 
-        public virtual List<string> ParseGroupMangos(HtmlDocument doc)
+        public static List<string> ParseGroupMangos(HtmlDocument doc)
         {
             return doc.DocumentNode.SelectNodes("//div[contains(concat(' ',normalize-space(@class),' '),' proyect-item ')]/a").Select(m => m.Attributes["href"].Value.Trim()).ToList();
         }
 
-        public virtual List<string> ParseChapterImages(HtmlDocument doc)
+        public static List<string> ParseChapterImages(HtmlDocument doc)
         {
             return doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]").Select(img => img.Attributes["data-src"].Value.Trim()).ToList();
         }
 
-        public virtual SortedDictionary<string, (string, string)[]> ParseChaptersLinks(HtmlDocument doc)
+        public static SortedDictionary<string, (string, string)[]> ParseChaptersLinks(HtmlDocument doc)
         {
             SortedDictionary<string, (string, string)[]> chapters = new();
             var chaptersNodes = doc.DocumentNode.SelectNodes("//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]");
@@ -96,7 +96,7 @@ namespace TMOScrapper.Utils
             return chapters;
         }
 
-        public virtual SortedDictionary<string, (string, string)[]> ParseOneShotLinks(HtmlDocument doc)
+        public static SortedDictionary<string, (string, string)[]> ParseOneShotLinks(HtmlDocument doc)
         {
             string uploadLink, groupName;
             SortedDictionary<string, (string, string)[]> chapter = new();
@@ -116,14 +116,14 @@ namespace TMOScrapper.Utils
             return chapter;
         }
 
-        public virtual string ParseAndPadChapterNumber(string chapterNumber)
+        public static string ParseAndPadChapterNumber(string chapterNumber)
         {
             chapterNumber = Regex.Match(chapterNumber, "(?<=Capítulo )(\\d+.\\d+)").Value;
             var splits = chapterNumber.Split('.');
             return splits[0].PadLeft(3, '0') + (int.Parse(splits[1]) > 0 ? ("." + splits[1].Replace("0", "")) : "");
         }
 
-        public virtual string RemoveForbbidenPathCharacters(string filename)
+        public static string RemoveForbbidenPathCharacters(string filename)
         {
             // Split the string using forbidden characters to remove them, join them with a space as delimiter, truncate to 40, trim and remove excessive spaces
             return Regex.Replace(string.Join(" ", WebUtility.HtmlDecode(filename).Split(forbiddenPathCharacters)).Truncate(40).Trim(new char[] { ' ', '.' }), @"\s+", " ");

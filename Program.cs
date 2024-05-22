@@ -34,7 +34,6 @@ namespace TMOScrapper
             services.AddTransient<Scrapper>();
             services.AddTransient<HtmlAgilityPack.HtmlDocument>();
             services.AddTransient<CancellationTokenSource>();
-            services.AddScoped<HtmlParser>();
         }
     }
 }
