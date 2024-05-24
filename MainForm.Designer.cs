@@ -103,7 +103,7 @@
             btn_scan.Name = "btn_scan";
             btn_scan.Size = new Size(121, 23);
             btn_scan.TabIndex = 6;
-            btn_scan.Text = "Scan the scannies";
+            btn_scan.Text = "Scrap the scannies";
             btn_scan.UseVisualStyleBackColor = true;
             btn_scan.Click += Btn_scan_Click;
             // 

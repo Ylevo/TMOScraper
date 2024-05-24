@@ -15,41 +15,40 @@ namespace TMOScrapper.Utils
     {
         private static readonly char[] forbiddenPathCharacters = Path.GetInvalidFileNameChars().Union(Path.GetInvalidPathChars()).Union(new char[] { '+' }).ToArray();
 
-        public static List<string> ParseScanGroups(HtmlDocument doc)
+        public static List<string>? ParseScanGroups(HtmlDocument doc)
         {
             var nodes = doc.DocumentNode.SelectNodes(@"//li[contains(concat(' ',normalize-space(@class),' '),' upload-link ')]
                                                                  //div[1][contains(concat(' ',normalize-space(@class),' '),' text-truncate ')]
                                                                  /span");
-            List<string> groups = nodes.Select(n => String.Join('+', n.ParentNode.InnerText.Split(',', StringSplitOptions.TrimEntries).Select(g => RemoveForbbidenPathCharacters(g)))).Distinct().ToList();
-            groups.Sort();
+            List<string>? groups = nodes?.Select(n => String.Join('+', n.ParentNode.InnerText.Split(',', StringSplitOptions.TrimEntries).Select(g => RemoveForbbidenPathCharacters(g)))).Distinct().ToList();
 
             return groups;
         }
 
         public static string ParseGroupName(HtmlDocument doc)
         {
-            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//h1").InnerText);
+            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//div[@id='app']//h1").InnerText);
         }
 
         public static string ParseMangoTitleFromMangoPage(HtmlDocument doc)
         {
-            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//h2").InnerText);
+            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//div[@id='app']//h2").InnerText);
         }
 
         public static string ParseMangoTitleFromChapterPage(HtmlDocument doc)
         {
-            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//h1").InnerText);
+            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//div[@id='app']//h1").InnerText);
         }
 
         public static string ParseChapterNumberFromChapterPage(HtmlDocument doc)
         {
-            return doc.DocumentNode.SelectSingleNode("//h4").InnerText.Contains("ONE SHOT") ? "000"
-                                : "c" + ParseAndPadChapterNumber(doc.DocumentNode.SelectSingleNode("//h2").InnerText.Trim());
+            return doc.DocumentNode.SelectSingleNode("//div[@id='app']//h4").InnerText.Contains("ONE SHOT") ? "000"
+                                : "c" + ParseAndPadChapterNumber(doc.DocumentNode.SelectSingleNode("//div[@id='app']//h2").InnerText.Trim());
         }
 
         public static string ParseGroupNameFromChapterPage(HtmlDocument doc)
         {
-            return String.Join('+', doc.DocumentNode.SelectSingleNode("//h2").Elements("a").Select(d => RemoveForbbidenPathCharacters(d.InnerText)).ToArray());
+            return String.Join('+', doc.DocumentNode.SelectSingleNode("//div[@id='app']//h2").Elements("a").Select(d => RemoveForbbidenPathCharacters(d.InnerText)).ToArray());
         }
 
         public static List<string> ParseGroupMangos(HtmlDocument doc)

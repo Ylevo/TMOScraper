@@ -44,9 +44,12 @@
             btn_save = new Button();
             btn_cancel = new Button();
             chkBox_logger = new CheckBox();
+            lbl_mangoDelay = new Label();
+            numeric_mangoDelay = new NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)numeric_chapterDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_retryDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_maxRetries).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numeric_mangoDelay).BeginInit();
             SuspendLayout();
             // 
             // lbl_domain
@@ -86,7 +89,7 @@
             // lbl_maxRetries
             // 
             lbl_maxRetries.AutoSize = true;
-            lbl_maxRetries.Location = new Point(259, 79);
+            lbl_maxRetries.Location = new Point(259, 109);
             lbl_maxRetries.Name = "lbl_maxRetries";
             lbl_maxRetries.Size = new Size(74, 15);
             lbl_maxRetries.TabIndex = 4;
@@ -95,7 +98,7 @@
             // lbl_retryDelay
             // 
             lbl_retryDelay.AutoSize = true;
-            lbl_retryDelay.Location = new Point(259, 52);
+            lbl_retryDelay.Location = new Point(259, 80);
             lbl_retryDelay.Name = "lbl_retryDelay";
             lbl_retryDelay.Size = new Size(72, 15);
             lbl_retryDelay.TabIndex = 5;
@@ -104,7 +107,7 @@
             // lbl_chapterDelay
             // 
             lbl_chapterDelay.AutoSize = true;
-            lbl_chapterDelay.Location = new Point(259, 23);
+            lbl_chapterDelay.Location = new Point(259, 22);
             lbl_chapterDelay.Name = "lbl_chapterDelay";
             lbl_chapterDelay.Size = new Size(87, 15);
             lbl_chapterDelay.TabIndex = 6;
@@ -142,7 +145,7 @@
             // numeric_chapterDelay
             // 
             numeric_chapterDelay.Increment = new decimal(new int[] { 100, 0, 0, 0 });
-            numeric_chapterDelay.Location = new Point(352, 20);
+            numeric_chapterDelay.Location = new Point(361, 20);
             numeric_chapterDelay.Maximum = new decimal(new int[] { 60000, 0, 0, 0 });
             numeric_chapterDelay.Name = "numeric_chapterDelay";
             numeric_chapterDelay.Size = new Size(80, 23);
@@ -151,7 +154,7 @@
             // numeric_retryDelay
             // 
             numeric_retryDelay.Increment = new decimal(new int[] { 100, 0, 0, 0 });
-            numeric_retryDelay.Location = new Point(352, 49);
+            numeric_retryDelay.Location = new Point(361, 78);
             numeric_retryDelay.Maximum = new decimal(new int[] { 60000, 0, 0, 0 });
             numeric_retryDelay.Name = "numeric_retryDelay";
             numeric_retryDelay.Size = new Size(80, 23);
@@ -159,14 +162,14 @@
             // 
             // numeric_maxRetries
             // 
-            numeric_maxRetries.Location = new Point(352, 77);
+            numeric_maxRetries.Location = new Point(361, 107);
             numeric_maxRetries.Name = "numeric_maxRetries";
             numeric_maxRetries.Size = new Size(80, 23);
             numeric_maxRetries.TabIndex = 12;
             // 
             // btn_save
             // 
-            btn_save.Location = new Point(271, 148);
+            btn_save.Location = new Point(280, 151);
             btn_save.Name = "btn_save";
             btn_save.Size = new Size(75, 23);
             btn_save.TabIndex = 13;
@@ -176,7 +179,7 @@
             // 
             // btn_cancel
             // 
-            btn_cancel.Location = new Point(352, 148);
+            btn_cancel.Location = new Point(361, 151);
             btn_cancel.Name = "btn_cancel";
             btn_cancel.Size = new Size(75, 23);
             btn_cancel.TabIndex = 14;
@@ -194,11 +197,31 @@
             chkBox_logger.Text = "Enable file logging";
             chkBox_logger.UseVisualStyleBackColor = true;
             // 
+            // lbl_mangoDelay
+            // 
+            lbl_mangoDelay.AutoSize = true;
+            lbl_mangoDelay.Location = new Point(259, 51);
+            lbl_mangoDelay.Name = "lbl_mangoDelay";
+            lbl_mangoDelay.Size = new Size(83, 15);
+            lbl_mangoDelay.TabIndex = 16;
+            lbl_mangoDelay.Text = "Mango Delay :";
+            // 
+            // numeric_mangoDelay
+            // 
+            numeric_mangoDelay.Increment = new decimal(new int[] { 100, 0, 0, 0 });
+            numeric_mangoDelay.Location = new Point(361, 49);
+            numeric_mangoDelay.Maximum = new decimal(new int[] { 60000, 0, 0, 0 });
+            numeric_mangoDelay.Name = "numeric_mangoDelay";
+            numeric_mangoDelay.Size = new Size(80, 23);
+            numeric_mangoDelay.TabIndex = 17;
+            // 
             // OptionsForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(443, 183);
+            ClientSize = new Size(453, 186);
+            Controls.Add(numeric_mangoDelay);
+            Controls.Add(lbl_mangoDelay);
             Controls.Add(chkBox_logger);
             Controls.Add(btn_cancel);
             Controls.Add(btn_save);
@@ -220,6 +243,7 @@
             ((System.ComponentModel.ISupportInitialize)numeric_chapterDelay).EndInit();
             ((System.ComponentModel.ISupportInitialize)numeric_retryDelay).EndInit();
             ((System.ComponentModel.ISupportInitialize)numeric_maxRetries).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numeric_mangoDelay).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -242,5 +266,7 @@
         private Button btn_save;
         private Button btn_cancel;
         private CheckBox chkBox_logger;
+        private Label lbl_mangoDelay;
+        private NumericUpDown numeric_mangoDelay;
     }
 }

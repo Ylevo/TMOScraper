@@ -57,7 +57,7 @@ namespace TMOScrapper.Utils
             catch(Exception ex) when (ex is not OperationCanceledException)
             {
                 Log.Error($"Unexpected error while converting images : {ex.Message}");
-                Log.Error($"Stacktrace : {ex.StackTrace}");
+                Log.Fatal($"Stacktrace : {ex.StackTrace}");
             }
         }
 
@@ -100,7 +100,7 @@ namespace TMOScrapper.Utils
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 Log.Error($"Unexpected error while cropping images : {ex.Message}");
-                Log.Error($"Stacktrace : {ex.StackTrace}");
+                Log.Fatal($"Stacktrace : {ex.StackTrace}");
             }
         }
 

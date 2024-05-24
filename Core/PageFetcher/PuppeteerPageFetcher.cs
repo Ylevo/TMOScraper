@@ -1,21 +1,9 @@
-﻿using Newtonsoft.Json.Linq;
-using PuppeteerExtraSharp;
+﻿using PuppeteerExtraSharp;
 using PuppeteerExtraSharp.Plugins.ExtraStealth;
 using PuppeteerSharp;
 using Serilog;
-using Serilog.Core;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using TMOScrapper.Properties;
 
 namespace TMOScrapper.Core.PageFetcher
@@ -24,8 +12,8 @@ namespace TMOScrapper.Core.PageFetcher
     {
         private static IBrowser? browser = null;
         private IResponse? lastResponse = null;
-        private readonly NavigationOptions navigationOptionsDefault = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 4000 };
-        private readonly NavigationOptions navigationOptionsRedirect = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle2 }, Timeout = 2500 };
+        private readonly NavigationOptions navigationOptionsDefault = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 8000 };
+        private readonly NavigationOptions navigationOptionsFast = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle2 }, Timeout = 8000 };
 
         public PuppeteerPageFetcher() { }
 
@@ -70,7 +58,11 @@ namespace TMOScrapper.Core.PageFetcher
         {
             token.ThrowIfCancellationRequested();
 
-            await page.GoToAsync(url);
+            try
+            {
+                await page.GoToAsync(url, navigationOptionsFast);
+            }
+            catch (TimeoutException) { }
 
             return lastResponse.Status switch
             {
@@ -94,7 +86,7 @@ namespace TMOScrapper.Core.PageFetcher
 
                 if (page.Url.Contains("/view_uploads/"))
                 {
-                    await page.WaitForNavigationAsync(navigationOptionsRedirect);
+                    await page.WaitForNavigationAsync(navigationOptionsDefault);
                 }
             }
             catch (NavigationException) { }
@@ -116,11 +108,10 @@ namespace TMOScrapper.Core.PageFetcher
                     throw new PageFetchFailureException(lastResponse.Status);
             }
 
-            string chapterId = Regex.Match(page.Url, @"(?<=\/)([a-zA-Z0-9]{32})(?=\/)").Value;
+            string chapterId = Regex.Match(page.Url, @"(?<=\/viewer\/|\/reader\/|\/news\/)([a-zA-Z0-9]{12,32})(?=\/)").Value;
 
-            if (chapterId.Length != 32)
+            if (chapterId == "")
             {
-                Log.Error("Failed to reach the page including the chapter ID using puppeteer.");
                 throw new PageFetchFailureException(lastResponse.Status);
             }
 
@@ -148,7 +139,7 @@ namespace TMOScrapper.Core.PageFetcher
                 lastResponse = e.Response;
             };
 
-            page.Request += (sender, e) =>
+            page.Request += async (sender, e) =>
             {
                 switch (e.Request.ResourceType)
                 {
@@ -157,10 +148,10 @@ namespace TMOScrapper.Core.PageFetcher
                     case ResourceType.StyleSheet:
                     case ResourceType.ImageSet:
                     case ResourceType.Media:
-                        e.Request.AbortAsync();
+                        await e.Request.AbortAsync();
                         break;
                     default:
-                        e.Request.ContinueAsync();
+                        await e.Request.ContinueAsync();
                         break;
                 }
             };

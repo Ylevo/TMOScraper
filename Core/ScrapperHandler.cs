@@ -5,13 +5,14 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Navigation;
 using TMOScrapper.Core.PageFetcher;
 using TMOScrapper.Properties;
 
 namespace TMOScrapper.Core
 {
     public enum PageFetcherImplementation { HtmlAgi, Puppeteer };
-
+    public enum ScrappingResult { Success, ImplementationFailure, NoGroupSelected, PageNotFound };
 
     internal class ScrapperHandler
     {
@@ -41,11 +42,14 @@ namespace TMOScrapper.Core
         {
             try
             {
-                if (!await scrapper.ScrapChapters(url, groups, chapterRange, skipMango) && currentImplementation != PageFetcherImplementation.Puppeteer)
+                ScrappingResult result = await scrapper.ScrapChapters(url, groups, chapterRange, skipMango);
+                if (result == ScrappingResult.ImplementationFailure && currentImplementation != PageFetcherImplementation.Puppeteer)
                 {
                     SwitchToPuppeteer();
-                    await scrapper.ScrapChapters(url, groups, chapterRange, skipMango);
+                    await ScrapChapters(url, groups, chapterRange, skipMango);
+                    return;
                 }
+                LogScrappingResult(result);
             }
             catch (OperationCanceledException)
             {
@@ -54,7 +58,7 @@ namespace TMOScrapper.Core
             catch (Exception ex)
             {
                 Log.Error($"An unexpected error occurred : {ex.Message}");
-                Log.Error($"Stacktrace : {ex.StackTrace} ");
+                Log.Fatal($"Stacktrace : {ex.StackTrace} ");
             }
         }
 
@@ -65,12 +69,13 @@ namespace TMOScrapper.Core
             try
             {
                 var tupleResult = await scrapper.ScrapScanGroups(url);
-                if (!tupleResult.result && currentImplementation != PageFetcherImplementation.Puppeteer)
+                if (tupleResult.result == ScrappingResult.ImplementationFailure && currentImplementation != PageFetcherImplementation.Puppeteer)
                 {
                     SwitchToPuppeteer();
                     return await ScrapScanGroups(url);
                 }
                 groups = tupleResult.groups;
+                LogScrappingResult(tupleResult.result);
             }
             catch (OperationCanceledException)
             {
@@ -79,16 +84,35 @@ namespace TMOScrapper.Core
             catch (Exception ex)
             {
                 Log.Error($"An unexpected error occurred : {ex.Message}");
-                Log.Error($"Stacktrace : {ex.StackTrace} ");
+                Log.Fatal($"Stacktrace : {ex.StackTrace} ");
             }
 
             return groups;
         }
-        public void SwitchToPuppeteer()
+        private void SwitchToPuppeteer()
         {
             Log.Information("Switching to puppeteer implementation.");
             currentImplementation = PageFetcherImplementation.Puppeteer;
             scrapper.PageFetcher = pageFetcherDict[currentImplementation]();
+        }
+
+        private void LogScrappingResult(ScrappingResult result)
+        {
+            switch(result)
+            {
+                case ScrappingResult.Success:
+                    Log.Information("Scrapping ended successfully.");
+                    break;
+                case ScrappingResult.PageNotFound:
+                    Log.Error("Scrapping failed : wrong URL or page not found.");
+                    break;
+                case ScrappingResult.ImplementationFailure:
+                    Log.Error("Scrapping failed : current implementations might be broken.");
+                    break;
+                case ScrappingResult.NoGroupSelected:
+                    Log.Error("Scrapping failed : no group selected.");
+                    break;
+            };
         }
     }
 }

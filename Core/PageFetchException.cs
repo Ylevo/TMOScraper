@@ -19,7 +19,7 @@ namespace TMOScrapper.Core
 
     public class PageFetchFailureException : PageFetchException
     {
-        public PageFetchFailureException(HttpStatusCode statusCode) : base($"Failed to retrieve page entirely. Status code : {statusCode}") { }
+        public PageFetchFailureException(HttpStatusCode statusCode) : base($"Failed to retrieve page. Status code : {statusCode}") { }
     }
 
     public class PageFetchBannedException : PageFetchException

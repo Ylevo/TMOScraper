@@ -19,6 +19,7 @@ namespace TMOScrapper
 
             txtBox_domain.Text = Settings.Default.Domain;
             numeric_chapterDelay.Value = Settings.Default.ChapterDelay;
+            numeric_mangoDelay.Value = Settings.Default.MangoDelay;
             numeric_retryDelay.Value = Settings.Default.RetryDelay;
             numeric_maxRetries.Value = Settings.Default.MaxRetries;
             cmbBox_puppeteer.SelectedIndex = Settings.Default.AlwaysUsePuppeteer ? cmbBox_puppeteer.FindStringExact("By default") : cmbBox_puppeteer.FindStringExact("As fallback");
@@ -32,6 +33,7 @@ namespace TMOScrapper
         {
             Settings.Default.Domain = txtBox_domain.Text;
             Settings.Default.ChapterDelay = (int)numeric_chapterDelay.Value;
+            Settings.Default.MangoDelay = (int)numeric_mangoDelay.Value;
             Settings.Default.RetryDelay = (int)numeric_retryDelay.Value;
             Settings.Default.MaxRetries = (int)numeric_maxRetries.Value;
             Settings.Default.AlwaysUsePuppeteer = (string)cmbBox_puppeteer.SelectedItem == "By default";

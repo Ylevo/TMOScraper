@@ -166,5 +166,17 @@ namespace TMOScrapper.Properties {
                 this["FileLogging"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("2000")]
+        public int MangoDelay {
+            get {
+                return ((int)(this["MangoDelay"]));
+            }
+            set {
+                this["MangoDelay"] = value;
+            }
+        }
     }
 }

@@ -75,7 +75,9 @@ namespace TMOScrapper
 
             var logConf = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
-                .WriteTo.RichTextBox(wpfRichTextBox, theme: LoggerTheme.MyTheme, outputTemplate: outputTemplate, syncRoot: loggerSync);
+                .WriteTo.Logger(lc => lc
+                    .Filter.ByExcluding(log => log.Level == Serilog.Events.LogEventLevel.Fatal)
+                    .WriteTo.RichTextBox(wpfRichTextBox, theme: LoggerTheme.MyTheme, outputTemplate: outputTemplate, syncRoot: loggerSync));
 
             if (Settings.Default.FileLogging)
             {
@@ -85,7 +87,8 @@ namespace TMOScrapper
                 fileSizeLimitBytes: 50000000,
                 rollingInterval: RollingInterval.Day,
                 rollOnFileSizeLimit: true,
-                retainedFileTimeLimit: TimeSpan.FromDays(7));
+                retainedFileTimeLimit: TimeSpan.FromDays(7)
+                );
             }
 
             Log.Logger = logConf.CreateLogger();

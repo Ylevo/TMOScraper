@@ -1,18 +1,7 @@
 ﻿using HtmlAgilityPack;
-using PuppeteerSharp;
-using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using TMOScrapper.Properties;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using Serilog;
 

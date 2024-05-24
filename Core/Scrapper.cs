@@ -31,7 +31,7 @@ namespace TMOScrapper.Core
             retryPipeline = SetRetryPipeline();
         }
 
-        public async Task<bool> ScrapChapters(
+        public async Task<ScrappingResult> ScrapChapters(
             string url, 
             string[]? groups, 
             (bool skipChapters, decimal from, decimal to) chapterRange,
@@ -49,40 +49,39 @@ namespace TMOScrapper.Core
                 case "Group":
                     return await ScrapGroupChapters(url, skipMango, chapterRange);
                 default:
-                    Log.Error("Wrong URL : couldn't match it with anything.");
-                    return true;
+                    return ScrappingResult.PageNotFound;
             }
         }
 
-        public async Task<(bool result, List<string>? groups)> ScrapScanGroups(string url)
+        public async Task<(ScrappingResult result, List<string>? groups)> ScrapScanGroups(string url)
         {
             try
             {
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
             }
-            catch(UriFormatException ex)
+            catch(UriFormatException)
             {
-                Log.Error("404 scannies not found. Check your URL.");
-                return (true, null);
+                return (ScrappingResult.PageNotFound, null);
             }
             catch(PageFetchException ex)
             {
                 Log.Error(ex.Message);
-                return (false, null);
+                return (ScrappingResult.ImplementationFailure, null);
             }
 
             List<string> scanGroups = HtmlParser.ParseScanGroups(doc);
 
             if (scanGroups == null || scanGroups.Count == 0)
             {
-                Log.Error("404 scannies not found. Check your URL.");
-                return (true, null);
+                return (ScrappingResult.PageNotFound, null);
             }
 
-            return (true, scanGroups);
+            scanGroups.Sort();
+
+            return (ScrappingResult.Success, scanGroups);
         }
 
-        public async Task<bool> ScrapSingleChapter(string url)
+        public async Task<ScrappingResult> ScrapSingleChapter(string url)
         {
             string mangoTitle,
                 chapterNumber,
@@ -130,12 +129,12 @@ namespace TMOScrapper.Core
                         await ImageUtil.SplitImages(currentFolder, TokenSource.Token);
                     }
                 }
-                return true;
+                return ScrappingResult.Success;
             }
             catch (PageFetchException ex)
             {
                 Log.Error(ex.Message);
-                return false;
+                return ScrappingResult.ImplementationFailure;
             }
             finally
             {
@@ -146,7 +145,7 @@ namespace TMOScrapper.Core
             }
         }
 
-        public async Task<bool> ScrapBulkChapters(string url, string[]? groups, (bool skipChapters, decimal from, decimal to) chapterRange, bool groupScrapping = false)
+        public async Task<ScrappingResult> ScrapBulkChapters(string url, string[]? groups, (bool skipChapters, decimal from, decimal to) chapterRange, bool groupScrapping = false)
         {
             string mangoTitle = "",
                chapterNumber,
@@ -159,8 +158,7 @@ namespace TMOScrapper.Core
             {
                 if (groups == null)
                 {
-                    Log.Error("No scannies selected, aborting scrapping.");
-                    return true;
+                    return ScrappingResult.NoGroupSelected;
                 }
 
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
@@ -241,17 +239,17 @@ namespace TMOScrapper.Core
 
                 Log.Information($"Done scrapping chapters of \"{mangoTitle}\"");
 
-                return true;
+                return ScrappingResult.Success;
             }
             catch (PageFetchException ex) when (ex is PageFetchNotFoundException && groupScrapping)
             {
-                Log.Error(ex.Message);
-                return true;
+                Log.Warning(ex.Message);
+                return ScrappingResult.PageNotFound;
             }
             catch (PageFetchException ex)
             {
                 Log.Error($"Max retries reached : {ex.Message}");
-                return false;
+                return ScrappingResult.ImplementationFailure;
             }
             finally
             {
@@ -262,9 +260,10 @@ namespace TMOScrapper.Core
             }
         }
 
-        public async Task<bool> ScrapGroupChapters(string url, int skipMango, (bool skipChapters, decimal from, decimal to) chapterRange)
+        public async Task<ScrappingResult> ScrapGroupChapters(string url, int skipMango, (bool skipChapters, decimal from, decimal to) chapterRange)
         {
             int skippedMangos = 0;
+            List<string> notFoundMangos = new();
             try
             {
                 skipMango = toSkipMango > skipMango ? toSkipMango : skipMango;
@@ -283,25 +282,39 @@ namespace TMOScrapper.Core
                     {
                         continue;
                     }
-                    if (await ScrapBulkChapters(mangoUrl, groupName, chapterRange, true))
+
+                    ScrappingResult result = await ScrapBulkChapters(mangoUrl, groupName, chapterRange, true);
+
+                    switch(result)
                     {
-                        return false;
+                        case ScrappingResult.Success:
+                            break;
+                        case ScrappingResult.PageNotFound:
+                            notFoundMangos.Add(mangoUrl);
+                            break;
+                        default:
+                            return result;
                     }
 
                     toSkipMango++;
                     TokenSource.Token.ThrowIfCancellationRequested();
-                    Log.Information("Waiting 2 sec before next mango.");
-                    await Task.Delay(2000);
+                    Log.Information($"Waiting {Settings.Default.MangoDelay} ms before next mango ...");
+                    await Task.Delay(Settings.Default.MangoDelay);
                 }
 
                 Log.Information($"Done scrapping chapters by \"{groupName[0]}\"");
 
-                return true;
+                if (notFoundMangos.Count > 0)
+                {
+                    Log.Warning($"{notFoundMangos.Count} mango were not found : \n{string.Join("\n", notFoundMangos.ToArray())}");
+                }
+
+                return ScrappingResult.Success;
             }
             catch (PageFetchException ex)
             {
                 Log.Error($"Max retries reached, couldn't fetch the group page : {ex.Message}");
-                return false;
+                return ScrappingResult.ImplementationFailure;
             }
         }
 
@@ -317,7 +330,7 @@ namespace TMOScrapper.Core
                 OnRetry = static args =>
                 {
                     Log.Error(args.Outcome.Exception.Message);
-                    Log.Error($"Retrying ... (attempt {args.AttemptNumber+1} out of {Settings.Default.MaxRetries}");
+                    Log.Error($"Retrying ... (attempt {args.AttemptNumber+1} out of {Settings.Default.MaxRetries})");
                     return default;
                 }
             };
