@@ -17,6 +17,8 @@ using Serilog;
 using Serilog.Sinks.RichTextBox.Themes;
 using Newtonsoft.Json.Linq;
 using TMOScrapper.Core.PageFetcher;
+using TMOScrapper.Utils;
+using TMOScrapper.Properties;
 
 namespace TMOScrapper
 {
@@ -25,7 +27,6 @@ namespace TMOScrapper
         private readonly IServiceProvider serviceProvider;
         private bool selectGroupsToggle = true;
         private CancellationTokenSource? cancellationToken;
-        private int waitingTimeBetweenChapters = 3000;
 
         private static readonly object loggerSync = new object();
 
@@ -39,11 +40,11 @@ namespace TMOScrapper
             InitializeComponent();
             AddRichTextBoxLogger();
 
-            languageCmbBox.DataSource = new BindingSource(
+            cmbBox_language.DataSource = new BindingSource(
                 new Dictionary<string, string> { { "Spanish", "es" }, { "Spanish (LATAM)", "es-la" } },
                 null);
-            languageCmbBox.DisplayMember = "Key";
-            languageCmbBox.ValueMember = "Value";
+            cmbBox_language.DisplayMember = "Key";
+            cmbBox_language.ValueMember = "Value";
             txtBox_setFolder.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         }
 
@@ -53,7 +54,7 @@ namespace TMOScrapper
             {
                 Dock = DockStyle.Fill,
             };
-            panel_Logger.Controls.Add(richTextBoxHost);
+            panel_logger.Controls.Add(richTextBoxHost);
 
             var wpfRichTextBox = new System.Windows.Controls.RichTextBox
             {
@@ -72,17 +73,22 @@ namespace TMOScrapper
             richTextBoxHost.Child = wpfRichTextBox;
             const string outputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
 
-            Log.Logger = new LoggerConfiguration()
+            var logConf = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
-                .WriteTo.RichTextBox(wpfRichTextBox, theme: LoggerTheme.MyTheme, outputTemplate: outputTemplate, syncRoot: loggerSync)
-                /*.WriteTo.File(
-                "Logs/log.txt", 
-                outputTemplate: outputTemplate, 
-                fileSizeLimitBytes: 50000000, 
-                rollingInterval: RollingInterval.Day, 
+                .WriteTo.RichTextBox(wpfRichTextBox, theme: LoggerTheme.MyTheme, outputTemplate: outputTemplate, syncRoot: loggerSync);
+
+            if (Settings.Default.FileLogging)
+            {
+                logConf.WriteTo.File(
+                "Logs/log.txt",
+                outputTemplate: outputTemplate,
+                fileSizeLimitBytes: 50000000,
+                rollingInterval: RollingInterval.Day,
                 rollOnFileSizeLimit: true,
-                retainedFileTimeLimit: TimeSpan.FromDays(7))*/
-                .CreateLogger();
+                retainedFileTimeLimit: TimeSpan.FromDays(7));
+            }
+
+            Log.Logger = logConf.CreateLogger();
         }
 
         private ScrapperHandler GetNewScrapper()
@@ -95,6 +101,9 @@ namespace TMOScrapper
 
         private async void MainForm_Shown(object sender, EventArgs e)
         {
+            chkBox_mangoSubfolder.Checked = Settings.Default.SubFolder;
+            txtBox_setFolder.Text = Settings.Default.MainFolder;
+            cmbBox_language.SelectedValue = Settings.Default.Language;
             await PuppeteerPageFetcher.InitializePuppeteer();
             btn_download.Enabled = true;
             btn_scan.Enabled = true;
@@ -105,6 +114,7 @@ namespace TMOScrapper
             if (setFolderDialog.ShowDialog() == DialogResult.OK)
             {
                 txtBox_setFolder.Text = setFolderDialog.SelectedPath;
+                Settings.Default.MainFolder = setFolderDialog.SelectedPath;
             }
         }
 
@@ -121,9 +131,9 @@ namespace TMOScrapper
 
             if (groups != null)
             {
-                listBox_Scannies.Items.Clear();
-                listBox_Scannies.Items.AddRange(groups.ToArray());
-                listBox_Scannies.Visible = true;
+                listBox_scannies.Items.Clear();
+                listBox_scannies.Items.AddRange(groups.ToArray());
+                listBox_scannies.Visible = true;
             }
 
             ToggleUI();
@@ -131,14 +141,14 @@ namespace TMOScrapper
 
         private async void BtnDownload_Click(object sender, EventArgs e)
         {
-            var groups = listBox_Scannies.CheckedItems.Cast<string>().ToArray();
+            var groups = listBox_scannies.CheckedItems.Cast<string>().ToArray();
             // clear logger?
             ToggleUI();
 
             await GetNewScrapper().StartScrapping(
                 txtBox_mangoUrl.Text,
                 groups.Length == 0 ? null : groups,
-                (checkBox_chaptersRange.Checked, numeric_chaptersRangeFrom.Value, numeric_chaptersRangeTo.Value),
+                (chkBox_chaptersRange.Checked, numeric_chaptersRangeFrom.Value, numeric_chaptersRangeTo.Value),
                 (int)numeric_skipMangos.Value
                 );
 
@@ -148,7 +158,7 @@ namespace TMOScrapper
         private void ToggleUI()
         {
             btn_setFolder.Enabled = !btn_setFolder.Enabled;
-            listBox_Scannies.Enabled = !listBox_Scannies.Enabled;
+            listBox_scannies.Enabled = !listBox_scannies.Enabled;
             btn_scan.Enabled = !btn_scan.Enabled;
             btn_download.Enabled = !btn_download.Enabled;
             btn_stop.Enabled = !btn_stop.Enabled;
@@ -163,16 +173,16 @@ namespace TMOScrapper
 
         private void TxtBoxMangoUrl_TextChanged(object sender, EventArgs e)
         {
-            listBox_Scannies.Visible = false;
+            listBox_scannies.Visible = false;
         }
 
         private void Btn_selectAllScannies_Click(object sender, EventArgs e)
         {
-            if (listBox_Scannies.Visible)
+            if (listBox_scannies.Visible)
             {
-                for (int i = 0; i < listBox_Scannies.Items.Count; i++)
+                for (int i = 0; i < listBox_scannies.Items.Count; i++)
                 {
-                    listBox_Scannies.SetItemChecked(i, selectGroupsToggle);
+                    listBox_scannies.SetItemChecked(i, selectGroupsToggle);
                 }
 
                 btn_selectAllScannies.Text = selectGroupsToggle ? "Unselect all" : "Select all";
@@ -198,6 +208,22 @@ namespace TMOScrapper
         {
             new OptionsForm().ShowDialog(this);
         }
+
+        private void chkBox_mangoSubfolder_CheckedChanged(object sender, EventArgs e)
+        {
+            Settings.Default.SubFolder = chkBox_mangoSubfolder.Checked;
+        }
+
+        private void cmbBox_language_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            Settings.Default.Language = (string)cmbBox_language.SelectedValue;
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Settings.Default.Save();
+        }
+        
     }
 
     public class LoggerTheme : RichTextBoxConsoleTheme

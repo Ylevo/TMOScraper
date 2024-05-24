@@ -27,12 +27,15 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="ConvertImages" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="ConvertFormat" Type="System.String" Scope="User">
-      <Value Profile="(Default)">PNG</Value>
+      <Value Profile="(Default)">JPEG</Value>
     </Setting>
-    <Setting Name="CropImages" Type="System.Boolean" Scope="User">
+    <Setting Name="SplitImages" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="FileLogging" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>

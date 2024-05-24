@@ -28,22 +28,22 @@
             btn_setFolder = new Button();
             setFolderDialog = new FolderBrowserDialog();
             btn_scan = new Button();
-            listBox_Scannies = new CheckedListBox();
-            checkBox_MangoSubfolder = new CheckBox();
+            listBox_scannies = new CheckedListBox();
+            chkBox_mangoSubfolder = new CheckBox();
             label1 = new Label();
             btn_stop = new Button();
             lbl_language = new Label();
-            languageCmbBox = new ComboBox();
-            checkBox_chaptersRange = new CheckBox();
+            cmbBox_language = new ComboBox();
+            chkBox_chaptersRange = new CheckBox();
             numeric_chaptersRangeFrom = new NumericUpDown();
             lbl_chaptersRangeTo = new Label();
             numeric_chaptersRangeTo = new NumericUpDown();
-            checkBox_skipMangos = new CheckBox();
+            chkBox_skipMangos = new CheckBox();
             numeric_skipMangos = new NumericUpDown();
             btn_selectAllScannies = new Button();
-            panel_Logger = new Panel();
+            panel_logger = new Panel();
             menuStrip1 = new MenuStrip();
-            menuItemOptions = new ToolStripMenuItem();
+            menuItem_options = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)numeric_chaptersRangeFrom).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_chaptersRangeTo).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_skipMangos).BeginInit();
@@ -107,26 +107,27 @@
             btn_scan.UseVisualStyleBackColor = true;
             btn_scan.Click += Btn_scan_Click;
             // 
-            // listBox_Scannies
+            // listBox_scannies
             // 
-            listBox_Scannies.FormattingEnabled = true;
-            listBox_Scannies.Location = new Point(139, 151);
-            listBox_Scannies.Name = "listBox_Scannies";
-            listBox_Scannies.Size = new Size(397, 76);
-            listBox_Scannies.TabIndex = 7;
-            listBox_Scannies.Visible = false;
+            listBox_scannies.FormattingEnabled = true;
+            listBox_scannies.Location = new Point(139, 151);
+            listBox_scannies.Name = "listBox_scannies";
+            listBox_scannies.Size = new Size(397, 76);
+            listBox_scannies.TabIndex = 7;
+            listBox_scannies.Visible = false;
             // 
-            // checkBox_MangoSubfolder
+            // chkBox_mangoSubfolder
             // 
-            checkBox_MangoSubfolder.AutoSize = true;
-            checkBox_MangoSubfolder.Checked = true;
-            checkBox_MangoSubfolder.CheckState = CheckState.Checked;
-            checkBox_MangoSubfolder.Location = new Point(382, 96);
-            checkBox_MangoSubfolder.Name = "checkBox_MangoSubfolder";
-            checkBox_MangoSubfolder.Size = new Size(154, 19);
-            checkBox_MangoSubfolder.TabIndex = 9;
-            checkBox_MangoSubfolder.Text = "Create mango subfolder";
-            checkBox_MangoSubfolder.UseVisualStyleBackColor = true;
+            chkBox_mangoSubfolder.AutoSize = true;
+            chkBox_mangoSubfolder.Checked = true;
+            chkBox_mangoSubfolder.CheckState = CheckState.Checked;
+            chkBox_mangoSubfolder.Location = new Point(382, 96);
+            chkBox_mangoSubfolder.Name = "chkBox_mangoSubfolder";
+            chkBox_mangoSubfolder.Size = new Size(154, 19);
+            chkBox_mangoSubfolder.TabIndex = 9;
+            chkBox_mangoSubfolder.Text = "Create mango subfolder";
+            chkBox_mangoSubfolder.UseVisualStyleBackColor = true;
+            chkBox_mangoSubfolder.CheckedChanged += chkBox_mangoSubfolder_CheckedChanged;
             // 
             // label1
             // 
@@ -157,23 +158,24 @@
             lbl_language.TabIndex = 15;
             lbl_language.Text = "Language :";
             // 
-            // languageCmbBox
+            // cmbBox_language
             // 
-            languageCmbBox.FormattingEnabled = true;
-            languageCmbBox.Location = new Point(95, 92);
-            languageCmbBox.Name = "languageCmbBox";
-            languageCmbBox.Size = new Size(121, 23);
-            languageCmbBox.TabIndex = 16;
+            cmbBox_language.FormattingEnabled = true;
+            cmbBox_language.Location = new Point(95, 92);
+            cmbBox_language.Name = "cmbBox_language";
+            cmbBox_language.Size = new Size(121, 23);
+            cmbBox_language.TabIndex = 16;
+            cmbBox_language.SelectionChangeCommitted += cmbBox_language_SelectionChangeCommitted;
             // 
-            // checkBox_chaptersRange
+            // chkBox_chaptersRange
             // 
-            checkBox_chaptersRange.AutoSize = true;
-            checkBox_chaptersRange.Location = new Point(14, 121);
-            checkBox_chaptersRange.Name = "checkBox_chaptersRange";
-            checkBox_chaptersRange.Size = new Size(115, 19);
-            checkBox_chaptersRange.TabIndex = 17;
-            checkBox_chaptersRange.Text = "Chapters Range :";
-            checkBox_chaptersRange.UseVisualStyleBackColor = true;
+            chkBox_chaptersRange.AutoSize = true;
+            chkBox_chaptersRange.Location = new Point(14, 121);
+            chkBox_chaptersRange.Name = "chkBox_chaptersRange";
+            chkBox_chaptersRange.Size = new Size(115, 19);
+            chkBox_chaptersRange.TabIndex = 17;
+            chkBox_chaptersRange.Text = "Chapters Range :";
+            chkBox_chaptersRange.UseVisualStyleBackColor = true;
             // 
             // numeric_chaptersRangeFrom
             // 
@@ -206,15 +208,15 @@
             numeric_chaptersRangeTo.TabIndex = 20;
             numeric_chaptersRangeTo.Value = new decimal(new int[] { 2, 0, 0, 0 });
             // 
-            // checkBox_skipMangos
+            // chkBox_skipMangos
             // 
-            checkBox_skipMangos.AutoSize = true;
-            checkBox_skipMangos.Location = new Point(382, 121);
-            checkBox_skipMangos.Name = "checkBox_skipMangos";
-            checkBox_skipMangos.Size = new Size(54, 19);
-            checkBox_skipMangos.TabIndex = 21;
-            checkBox_skipMangos.Text = "Skip :";
-            checkBox_skipMangos.UseVisualStyleBackColor = true;
+            chkBox_skipMangos.AutoSize = true;
+            chkBox_skipMangos.Location = new Point(382, 121);
+            chkBox_skipMangos.Name = "chkBox_skipMangos";
+            chkBox_skipMangos.Size = new Size(54, 19);
+            chkBox_skipMangos.TabIndex = 21;
+            chkBox_skipMangos.Text = "Skip :";
+            chkBox_skipMangos.UseVisualStyleBackColor = true;
             // 
             // numeric_skipMangos
             // 
@@ -236,48 +238,48 @@
             btn_selectAllScannies.UseVisualStyleBackColor = true;
             btn_selectAllScannies.Click += Btn_selectAllScannies_Click;
             // 
-            // panel_Logger
+            // panel_logger
             // 
-            panel_Logger.Location = new Point(139, 246);
-            panel_Logger.Name = "panel_Logger";
-            panel_Logger.Size = new Size(397, 138);
-            panel_Logger.TabIndex = 24;
+            panel_logger.Location = new Point(139, 246);
+            panel_logger.Name = "panel_logger";
+            panel_logger.Size = new Size(397, 138);
+            panel_logger.TabIndex = 24;
             // 
             // menuStrip1
             // 
-            menuStrip1.Items.AddRange(new ToolStripItem[] { menuItemOptions });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { menuItem_options });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(557, 24);
             menuStrip1.TabIndex = 25;
             menuStrip1.Text = "menuStrip1";
             // 
-            // menuItemOptions
+            // menuItem_options
             // 
-            menuItemOptions.Name = "menuItemOptions";
-            menuItemOptions.Size = new Size(61, 20);
-            menuItemOptions.Text = "Options";
-            menuItemOptions.Click += MenuItemOptions_Click;
+            menuItem_options.Name = "menuItem_options";
+            menuItem_options.Size = new Size(61, 20);
+            menuItem_options.Text = "Options";
+            menuItem_options.Click += MenuItemOptions_Click;
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(557, 430);
-            Controls.Add(panel_Logger);
+            Controls.Add(panel_logger);
             Controls.Add(btn_selectAllScannies);
             Controls.Add(numeric_skipMangos);
-            Controls.Add(checkBox_skipMangos);
+            Controls.Add(chkBox_skipMangos);
             Controls.Add(numeric_chaptersRangeTo);
             Controls.Add(lbl_chaptersRangeTo);
             Controls.Add(numeric_chaptersRangeFrom);
-            Controls.Add(checkBox_chaptersRange);
-            Controls.Add(languageCmbBox);
+            Controls.Add(chkBox_chaptersRange);
+            Controls.Add(cmbBox_language);
             Controls.Add(lbl_language);
             Controls.Add(btn_stop);
             Controls.Add(label1);
-            Controls.Add(checkBox_MangoSubfolder);
-            Controls.Add(listBox_Scannies);
+            Controls.Add(chkBox_mangoSubfolder);
+            Controls.Add(listBox_scannies);
             Controls.Add(btn_scan);
             Controls.Add(btn_setFolder);
             Controls.Add(txtBox_setFolder);
@@ -290,6 +292,7 @@
             MaximizeBox = false;
             Name = "MainForm";
             Text = "TMO Scrapper";
+            FormClosing += MainForm_FormClosing;
             Shown += MainForm_Shown;
             ((System.ComponentModel.ISupportInitialize)numeric_chaptersRangeFrom).EndInit();
             ((System.ComponentModel.ISupportInitialize)numeric_chaptersRangeTo).EndInit();
@@ -309,21 +312,21 @@
         private Button btn_setFolder;
         private FolderBrowserDialog setFolderDialog;
         private Button btn_scan;
-        private CheckedListBox listBox_Scannies;
-        private CheckBox checkBox_MangoSubfolder;
+        private CheckedListBox listBox_scannies;
+        private CheckBox chkBox_mangoSubfolder;
         private Label label1;
         private Button btn_stop;
         private Label lbl_language;
-        private ComboBox languageCmbBox;
-        private CheckBox checkBox_chaptersRange;
+        private ComboBox cmbBox_language;
+        private CheckBox chkBox_chaptersRange;
         private NumericUpDown numeric_chaptersRangeFrom;
         private Label lbl_chaptersRangeTo;
         private NumericUpDown numeric_chaptersRangeTo;
-        private CheckBox checkBox_skipMangos;
+        private CheckBox chkBox_skipMangos;
         private NumericUpDown numeric_skipMangos;
         private Button btn_selectAllScannies;
-        private Panel panel_Logger;
+        private Panel panel_logger;
         private MenuStrip menuStrip1;
-        private ToolStripMenuItem menuItemOptions;
+        private ToolStripMenuItem menuItem_options;
     }
 }

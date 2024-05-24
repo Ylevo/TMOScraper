@@ -121,7 +121,7 @@ namespace TMOScrapper.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool ConvertImages {
             get {
                 return ((bool)(this["ConvertImages"]));
@@ -133,7 +133,7 @@ namespace TMOScrapper.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("PNG")]
+        [global::System.Configuration.DefaultSettingValueAttribute("JPEG")]
         public string ConvertFormat {
             get {
                 return ((string)(this["ConvertFormat"]));
@@ -146,12 +146,24 @@ namespace TMOScrapper.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool CropImages {
+        public bool SplitImages {
             get {
-                return ((bool)(this["CropImages"]));
+                return ((bool)(this["SplitImages"]));
             }
             set {
-                this["CropImages"] = value;
+                this["SplitImages"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool FileLogging {
+            get {
+                return ((bool)(this["FileLogging"]));
+            }
+            set {
+                this["FileLogging"] = value;
             }
         }
     }

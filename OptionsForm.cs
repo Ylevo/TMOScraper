@@ -17,26 +17,28 @@ namespace TMOScrapper
         {
             InitializeComponent();
 
-            txtBoxDomain.Text = Settings.Default.Domain;
-            numericChapterDelay.Value = Settings.Default.ChapterDelay;
-            numericRetryDelay.Value = Settings.Default.RetryDelay;
-            numericMaxRetries.Value = Settings.Default.MaxRetries;
-            cmbBoxPuppeteer.SelectedIndex = Settings.Default.AlwaysUsePuppeteer ? cmbBoxPuppeteer.FindStringExact("By default") : cmbBoxPuppeteer.FindStringExact("As fallback");
-            cmbBoxConvert.SelectedIndex = cmbBoxConvert.FindStringExact(Settings.Default.ConvertFormat);
-            chkBoxConvert.Checked = Settings.Default.ConvertImages;
-            chkBoxCrop.Checked = Settings.Default.CropImages;
+            txtBox_domain.Text = Settings.Default.Domain;
+            numeric_chapterDelay.Value = Settings.Default.ChapterDelay;
+            numeric_retryDelay.Value = Settings.Default.RetryDelay;
+            numeric_maxRetries.Value = Settings.Default.MaxRetries;
+            cmbBox_puppeteer.SelectedIndex = Settings.Default.AlwaysUsePuppeteer ? cmbBox_puppeteer.FindStringExact("By default") : cmbBox_puppeteer.FindStringExact("As fallback");
+            cmbBox_convert.SelectedIndex = cmbBox_convert.FindStringExact(Settings.Default.ConvertFormat);
+            chkBox_convert.Checked = Settings.Default.ConvertImages;
+            chkBox_crop.Checked = Settings.Default.SplitImages;
+            chkBox_logger.Checked = Settings.Default.FileLogging;
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            Settings.Default.Domain = txtBoxDomain.Text;
-            Settings.Default.ChapterDelay = (int)numericChapterDelay.Value;
-            Settings.Default.RetryDelay = (int)numericRetryDelay.Value;
-            Settings.Default.MaxRetries = (int)numericMaxRetries.Value;
-            Settings.Default.AlwaysUsePuppeteer = (string)cmbBoxPuppeteer.SelectedItem == "By default";
-            Settings.Default.ConvertFormat = (string)cmbBoxConvert.SelectedItem;
-            Settings.Default.ConvertImages = chkBoxConvert.Checked;
-            Settings.Default.CropImages = chkBoxCrop.Checked;
+            Settings.Default.Domain = txtBox_domain.Text;
+            Settings.Default.ChapterDelay = (int)numeric_chapterDelay.Value;
+            Settings.Default.RetryDelay = (int)numeric_retryDelay.Value;
+            Settings.Default.MaxRetries = (int)numeric_maxRetries.Value;
+            Settings.Default.AlwaysUsePuppeteer = (string)cmbBox_puppeteer.SelectedItem == "By default";
+            Settings.Default.ConvertFormat = (string)cmbBox_convert.SelectedItem;
+            Settings.Default.ConvertImages = chkBox_convert.Checked;
+            Settings.Default.SplitImages = chkBox_crop.Checked;
+            Settings.Default.FileLogging = chkBox_logger.Checked;
 
             Settings.Default.Save();
             Close();

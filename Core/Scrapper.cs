@@ -86,7 +86,7 @@ namespace TMOScrapper.Core
 
             try
             {
-                Log.Information("Downloading single chapter.");
+                Log.Information("Scrapping single chapter.");
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token, PageType.Chapter); }, TokenSource.Token));
 
                 chapterNumber = HtmlParser.ParseChapterNumberFromChapterPage(doc);
@@ -110,9 +110,19 @@ namespace TMOScrapper.Core
                 {
                     Directory.CreateDirectory(currentFolder);
 
-                    Log.Information($"Download chapter {chapterNumber} by \"{groupName}\"");
+                    Log.Information($"Downloading chapter {chapterNumber} by \"{groupName}\"");
                     await Downloader.DownloadChapter(currentFolder, imgUrls, TokenSource.Token);
                     Log.Information($"Done downloading chapter {chapterNumber} by \"{groupName}\"");
+
+                    if (Settings.Default.ConvertImages)
+                    {
+                        ImageUtil.ConvertImages(currentFolder);
+                    }
+
+                    if (Settings.Default.SplitImages)
+                    {
+                        ImageUtil.SplitImages(currentFolder);
+                    }
                 }
                 return true;
             }
@@ -194,11 +204,21 @@ namespace TMOScrapper.Core
                             imgUrls = HtmlParser.ParseChapterImages(doc);
                             Directory.CreateDirectory(currentFolder);
 
-                            Log.Information($"Download chapter {chapterNumber} by \"{groupName}\"");
+                            Log.Information($"Downloading chapter {chapterNumber} by \"{groupName}\"");
                             await Downloader.DownloadChapter(currentFolder, imgUrls, TokenSource.Token);
                             Log.Information($"Done downloading chapter {chapterNumber} by \"{groupName}\"");
 
-                            Log.Information($"Waiing {Settings.Default.ChapterDelay} ms ...");
+                            if (Settings.Default.ConvertImages)
+                            {
+                                ImageUtil.ConvertImages(currentFolder);
+                            }
+
+                            if (Settings.Default.SplitImages) 
+                            {
+                                ImageUtil.SplitImages(currentFolder);
+                            }
+
+                            Log.Information($"Waiting {Settings.Default.ChapterDelay} ms before next chapter ...");
                             await Task.Delay(Settings.Default.ChapterDelay);
 
                             actuallyDidSomething = true;
@@ -222,7 +242,7 @@ namespace TMOScrapper.Core
             }
             catch (PageFetchException ex)
             {
-                Log.Error(ex.Message);
+                Log.Error($"Max retries reached : {ex.Message}");
                 return false;
             }
             finally
@@ -272,7 +292,7 @@ namespace TMOScrapper.Core
             }
             catch (PageFetchException ex)
             {
-                //log
+                Log.Error($"Max retries reached, couldn't fetch the group page : {ex.Message}");
                 return false;
             }
         }

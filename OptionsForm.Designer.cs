@@ -28,206 +28,219 @@
         /// </summary>
         private void InitializeComponent()
         {
-            lblDomain = new Label();
-            txtBoxDomain = new TextBox();
-            lblPuppeteer = new Label();
-            cmbBoxPuppeteer = new ComboBox();
-            lblMaxRetries = new Label();
-            lblRetryDelay = new Label();
-            lblChapterDelay = new Label();
-            chkBoxConvert = new CheckBox();
-            cmbBoxConvert = new ComboBox();
-            chkBoxCrop = new CheckBox();
-            numericChapterDelay = new NumericUpDown();
-            numericRetryDelay = new NumericUpDown();
-            numericMaxRetries = new NumericUpDown();
-            btnSave = new Button();
-            btnCancel = new Button();
-            ((System.ComponentModel.ISupportInitialize)numericChapterDelay).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)numericRetryDelay).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)numericMaxRetries).BeginInit();
+            lbl_domain = new Label();
+            txtBox_domain = new TextBox();
+            lbl_puppeteer = new Label();
+            cmbBox_puppeteer = new ComboBox();
+            lbl_maxRetries = new Label();
+            lbl_retryDelay = new Label();
+            lbl_chapterDelay = new Label();
+            chkBox_convert = new CheckBox();
+            cmbBox_convert = new ComboBox();
+            chkBox_crop = new CheckBox();
+            numeric_chapterDelay = new NumericUpDown();
+            numeric_retryDelay = new NumericUpDown();
+            numeric_maxRetries = new NumericUpDown();
+            btn_save = new Button();
+            btn_cancel = new Button();
+            chkBox_logger = new CheckBox();
+            ((System.ComponentModel.ISupportInitialize)numeric_chapterDelay).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numeric_retryDelay).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numeric_maxRetries).BeginInit();
             SuspendLayout();
             // 
-            // lblDomain
+            // lbl_domain
             // 
-            lblDomain.AutoSize = true;
-            lblDomain.Location = new Point(12, 23);
-            lblDomain.Name = "lblDomain";
-            lblDomain.Size = new Size(84, 15);
-            lblDomain.TabIndex = 0;
-            lblDomain.Text = "TMO Domain :";
+            lbl_domain.AutoSize = true;
+            lbl_domain.Location = new Point(12, 23);
+            lbl_domain.Name = "lbl_domain";
+            lbl_domain.Size = new Size(84, 15);
+            lbl_domain.TabIndex = 0;
+            lbl_domain.Text = "TMO Domain :";
             // 
-            // txtBoxDomain
+            // txtBox_domain
             // 
-            txtBoxDomain.Location = new Point(107, 20);
-            txtBoxDomain.Name = "txtBoxDomain";
-            txtBoxDomain.Size = new Size(121, 23);
-            txtBoxDomain.TabIndex = 1;
+            txtBox_domain.Location = new Point(107, 20);
+            txtBox_domain.Name = "txtBox_domain";
+            txtBox_domain.Size = new Size(121, 23);
+            txtBox_domain.TabIndex = 1;
             // 
-            // lblPuppeteer
+            // lbl_puppeteer
             // 
-            lblPuppeteer.AutoSize = true;
-            lblPuppeteer.Location = new Point(12, 52);
-            lblPuppeteer.Name = "lblPuppeteer";
-            lblPuppeteer.Size = new Size(89, 15);
-            lblPuppeteer.TabIndex = 2;
-            lblPuppeteer.Text = "Use Puppeteer :";
+            lbl_puppeteer.AutoSize = true;
+            lbl_puppeteer.Location = new Point(12, 52);
+            lbl_puppeteer.Name = "lbl_puppeteer";
+            lbl_puppeteer.Size = new Size(89, 15);
+            lbl_puppeteer.TabIndex = 2;
+            lbl_puppeteer.Text = "Use Puppeteer :";
             // 
-            // cmbBoxPuppeteer
+            // cmbBox_puppeteer
             // 
-            cmbBoxPuppeteer.FormattingEnabled = true;
-            cmbBoxPuppeteer.Items.AddRange(new object[] { "As fallback", "By default" });
-            cmbBoxPuppeteer.Location = new Point(107, 49);
-            cmbBoxPuppeteer.Name = "cmbBoxPuppeteer";
-            cmbBoxPuppeteer.Size = new Size(121, 23);
-            cmbBoxPuppeteer.TabIndex = 3;
+            cmbBox_puppeteer.FormattingEnabled = true;
+            cmbBox_puppeteer.Items.AddRange(new object[] { "As fallback", "By default" });
+            cmbBox_puppeteer.Location = new Point(107, 49);
+            cmbBox_puppeteer.Name = "cmbBox_puppeteer";
+            cmbBox_puppeteer.Size = new Size(121, 23);
+            cmbBox_puppeteer.TabIndex = 3;
             // 
-            // lblMaxRetries
+            // lbl_maxRetries
             // 
-            lblMaxRetries.AutoSize = true;
-            lblMaxRetries.Location = new Point(259, 79);
-            lblMaxRetries.Name = "lblMaxRetries";
-            lblMaxRetries.Size = new Size(74, 15);
-            lblMaxRetries.TabIndex = 4;
-            lblMaxRetries.Text = "Max Retries :";
+            lbl_maxRetries.AutoSize = true;
+            lbl_maxRetries.Location = new Point(259, 79);
+            lbl_maxRetries.Name = "lbl_maxRetries";
+            lbl_maxRetries.Size = new Size(74, 15);
+            lbl_maxRetries.TabIndex = 4;
+            lbl_maxRetries.Text = "Max Retries :";
             // 
-            // lblRetryDelay
+            // lbl_retryDelay
             // 
-            lblRetryDelay.AutoSize = true;
-            lblRetryDelay.Location = new Point(259, 52);
-            lblRetryDelay.Name = "lblRetryDelay";
-            lblRetryDelay.Size = new Size(72, 15);
-            lblRetryDelay.TabIndex = 5;
-            lblRetryDelay.Text = "Retry Delay :";
+            lbl_retryDelay.AutoSize = true;
+            lbl_retryDelay.Location = new Point(259, 52);
+            lbl_retryDelay.Name = "lbl_retryDelay";
+            lbl_retryDelay.Size = new Size(72, 15);
+            lbl_retryDelay.TabIndex = 5;
+            lbl_retryDelay.Text = "Retry Delay :";
             // 
-            // lblChapterDelay
+            // lbl_chapterDelay
             // 
-            lblChapterDelay.AutoSize = true;
-            lblChapterDelay.Location = new Point(259, 23);
-            lblChapterDelay.Name = "lblChapterDelay";
-            lblChapterDelay.Size = new Size(87, 15);
-            lblChapterDelay.TabIndex = 6;
-            lblChapterDelay.Text = "Chapter Delay :";
+            lbl_chapterDelay.AutoSize = true;
+            lbl_chapterDelay.Location = new Point(259, 23);
+            lbl_chapterDelay.Name = "lbl_chapterDelay";
+            lbl_chapterDelay.Size = new Size(87, 15);
+            lbl_chapterDelay.TabIndex = 6;
+            lbl_chapterDelay.Text = "Chapter Delay :";
             // 
-            // chkBoxConvert
+            // chkBox_convert
             // 
-            chkBoxConvert.AutoSize = true;
-            chkBoxConvert.Location = new Point(12, 78);
-            chkBoxConvert.Name = "chkBoxConvert";
-            chkBoxConvert.Size = new Size(109, 19);
-            chkBoxConvert.TabIndex = 7;
-            chkBoxConvert.Text = "Convert Images";
-            chkBoxConvert.UseVisualStyleBackColor = true;
+            chkBox_convert.AutoSize = true;
+            chkBox_convert.Location = new Point(12, 81);
+            chkBox_convert.Name = "chkBox_convert";
+            chkBox_convert.Size = new Size(109, 19);
+            chkBox_convert.TabIndex = 7;
+            chkBox_convert.Text = "Convert Images";
+            chkBox_convert.UseVisualStyleBackColor = true;
             // 
-            // cmbBoxConvert
+            // cmbBox_convert
             // 
-            cmbBoxConvert.FormattingEnabled = true;
-            cmbBoxConvert.Items.AddRange(new object[] { "JPEG", "PNG", "PNG 8 bits" });
-            cmbBoxConvert.Location = new Point(127, 78);
-            cmbBoxConvert.Name = "cmbBoxConvert";
-            cmbBoxConvert.Size = new Size(86, 23);
-            cmbBoxConvert.TabIndex = 8;
+            cmbBox_convert.FormattingEnabled = true;
+            cmbBox_convert.Items.AddRange(new object[] { "JPEG", "PNG", "PNG 4 bpp" });
+            cmbBox_convert.Location = new Point(127, 78);
+            cmbBox_convert.Name = "cmbBox_convert";
+            cmbBox_convert.Size = new Size(101, 23);
+            cmbBox_convert.TabIndex = 8;
             // 
-            // chkBoxCrop
+            // chkBox_crop
             // 
-            chkBoxCrop.AutoSize = true;
-            chkBoxCrop.Location = new Point(12, 103);
-            chkBoxCrop.Name = "chkBoxCrop";
-            chkBoxCrop.Size = new Size(93, 19);
-            chkBoxCrop.TabIndex = 9;
-            chkBoxCrop.Text = "Crop Images";
-            chkBoxCrop.UseVisualStyleBackColor = true;
+            chkBox_crop.AutoSize = true;
+            chkBox_crop.Location = new Point(12, 106);
+            chkBox_crop.Name = "chkBox_crop";
+            chkBox_crop.Size = new Size(93, 19);
+            chkBox_crop.TabIndex = 9;
+            chkBox_crop.Text = "Crop Images";
+            chkBox_crop.UseVisualStyleBackColor = true;
             // 
-            // numericChapterDelay
+            // numeric_chapterDelay
             // 
-            numericChapterDelay.Increment = new decimal(new int[] { 100, 0, 0, 0 });
-            numericChapterDelay.Location = new Point(352, 20);
-            numericChapterDelay.Maximum = new decimal(new int[] { 60000, 0, 0, 0 });
-            numericChapterDelay.Name = "numericChapterDelay";
-            numericChapterDelay.Size = new Size(80, 23);
-            numericChapterDelay.TabIndex = 10;
+            numeric_chapterDelay.Increment = new decimal(new int[] { 100, 0, 0, 0 });
+            numeric_chapterDelay.Location = new Point(352, 20);
+            numeric_chapterDelay.Maximum = new decimal(new int[] { 60000, 0, 0, 0 });
+            numeric_chapterDelay.Name = "numeric_chapterDelay";
+            numeric_chapterDelay.Size = new Size(80, 23);
+            numeric_chapterDelay.TabIndex = 10;
             // 
-            // numericRetryDelay
+            // numeric_retryDelay
             // 
-            numericRetryDelay.Increment = new decimal(new int[] { 100, 0, 0, 0 });
-            numericRetryDelay.Location = new Point(352, 49);
-            numericRetryDelay.Maximum = new decimal(new int[] { 60000, 0, 0, 0 });
-            numericRetryDelay.Name = "numericRetryDelay";
-            numericRetryDelay.Size = new Size(80, 23);
-            numericRetryDelay.TabIndex = 11;
+            numeric_retryDelay.Increment = new decimal(new int[] { 100, 0, 0, 0 });
+            numeric_retryDelay.Location = new Point(352, 49);
+            numeric_retryDelay.Maximum = new decimal(new int[] { 60000, 0, 0, 0 });
+            numeric_retryDelay.Name = "numeric_retryDelay";
+            numeric_retryDelay.Size = new Size(80, 23);
+            numeric_retryDelay.TabIndex = 11;
             // 
-            // numericMaxRetries
+            // numeric_maxRetries
             // 
-            numericMaxRetries.Location = new Point(352, 77);
-            numericMaxRetries.Name = "numericMaxRetries";
-            numericMaxRetries.Size = new Size(80, 23);
-            numericMaxRetries.TabIndex = 12;
+            numeric_maxRetries.Location = new Point(352, 77);
+            numeric_maxRetries.Name = "numeric_maxRetries";
+            numeric_maxRetries.Size = new Size(80, 23);
+            numeric_maxRetries.TabIndex = 12;
             // 
-            // btnSave
+            // btn_save
             // 
-            btnSave.Location = new Point(271, 133);
-            btnSave.Name = "btnSave";
-            btnSave.Size = new Size(75, 23);
-            btnSave.TabIndex = 13;
-            btnSave.Text = "Save";
-            btnSave.UseVisualStyleBackColor = true;
-            btnSave.Click += BtnSave_Click;
+            btn_save.Location = new Point(271, 148);
+            btn_save.Name = "btn_save";
+            btn_save.Size = new Size(75, 23);
+            btn_save.TabIndex = 13;
+            btn_save.Text = "Save";
+            btn_save.UseVisualStyleBackColor = true;
+            btn_save.Click += BtnSave_Click;
             // 
-            // btnCancel
+            // btn_cancel
             // 
-            btnCancel.Location = new Point(352, 133);
-            btnCancel.Name = "btnCancel";
-            btnCancel.Size = new Size(75, 23);
-            btnCancel.TabIndex = 14;
-            btnCancel.Text = "Cancel";
-            btnCancel.UseVisualStyleBackColor = true;
-            btnCancel.Click += BtnCancel_Click;
+            btn_cancel.Location = new Point(352, 148);
+            btn_cancel.Name = "btn_cancel";
+            btn_cancel.Size = new Size(75, 23);
+            btn_cancel.TabIndex = 14;
+            btn_cancel.Text = "Cancel";
+            btn_cancel.UseVisualStyleBackColor = true;
+            btn_cancel.Click += BtnCancel_Click;
+            // 
+            // chkBox_logger
+            // 
+            chkBox_logger.AutoSize = true;
+            chkBox_logger.Location = new Point(12, 131);
+            chkBox_logger.Name = "chkBox_logger";
+            chkBox_logger.Size = new Size(124, 19);
+            chkBox_logger.TabIndex = 15;
+            chkBox_logger.Text = "Enable file logging";
+            chkBox_logger.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(443, 168);
-            Controls.Add(btnCancel);
-            Controls.Add(btnSave);
-            Controls.Add(numericMaxRetries);
-            Controls.Add(numericRetryDelay);
-            Controls.Add(numericChapterDelay);
-            Controls.Add(chkBoxCrop);
-            Controls.Add(cmbBoxConvert);
-            Controls.Add(chkBoxConvert);
-            Controls.Add(lblChapterDelay);
-            Controls.Add(lblRetryDelay);
-            Controls.Add(lblMaxRetries);
-            Controls.Add(cmbBoxPuppeteer);
-            Controls.Add(lblPuppeteer);
-            Controls.Add(txtBoxDomain);
-            Controls.Add(lblDomain);
+            ClientSize = new Size(443, 183);
+            Controls.Add(chkBox_logger);
+            Controls.Add(btn_cancel);
+            Controls.Add(btn_save);
+            Controls.Add(numeric_maxRetries);
+            Controls.Add(numeric_retryDelay);
+            Controls.Add(numeric_chapterDelay);
+            Controls.Add(chkBox_crop);
+            Controls.Add(cmbBox_convert);
+            Controls.Add(chkBox_convert);
+            Controls.Add(lbl_chapterDelay);
+            Controls.Add(lbl_retryDelay);
+            Controls.Add(lbl_maxRetries);
+            Controls.Add(cmbBox_puppeteer);
+            Controls.Add(lbl_puppeteer);
+            Controls.Add(txtBox_domain);
+            Controls.Add(lbl_domain);
             Name = "OptionsForm";
             Text = "OptionsForm";
-            ((System.ComponentModel.ISupportInitialize)numericChapterDelay).EndInit();
-            ((System.ComponentModel.ISupportInitialize)numericRetryDelay).EndInit();
-            ((System.ComponentModel.ISupportInitialize)numericMaxRetries).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numeric_chapterDelay).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numeric_retryDelay).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numeric_maxRetries).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
 
-        private Label lblDomain;
-        private TextBox txtBoxDomain;
-        private Label lblPuppeteer;
-        private ComboBox cmbBoxPuppeteer;
-        private Label lblMaxRetries;
-        private Label lblRetryDelay;
-        private Label lblChapterDelay;
-        private CheckBox chkBoxConvert;
-        private ComboBox cmbBoxConvert;
-        private CheckBox chkBoxCrop;
-        private NumericUpDown numericChapterDelay;
-        private NumericUpDown numericRetryDelay;
-        private NumericUpDown numericMaxRetries;
-        private Button btnSave;
-        private Button btnCancel;
+        private Label lbl_domain;
+        private TextBox txtBox_domain;
+        private Label lbl_puppeteer;
+        private ComboBox cmbBox_puppeteer;
+        private Label lbl_maxRetries;
+        private Label lbl_retryDelay;
+        private Label lbl_chapterDelay;
+        private CheckBox chkBox_convert;
+        private ComboBox cmbBox_convert;
+        private CheckBox chkBox_crop;
+        private NumericUpDown numeric_chapterDelay;
+        private NumericUpDown numeric_retryDelay;
+        private NumericUpDown numeric_maxRetries;
+        private Button btn_save;
+        private Button btn_cancel;
+        private CheckBox chkBox_logger;
     }
 }
