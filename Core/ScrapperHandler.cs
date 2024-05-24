@@ -1,11 +1,4 @@
 ﻿using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Navigation;
 using TMOScrapper.Core.PageFetcher;
 using TMOScrapper.Properties;
 
@@ -43,12 +36,14 @@ namespace TMOScrapper.Core
             try
             {
                 ScrappingResult result = await scrapper.ScrapChapters(url, groups, chapterRange, skipMango);
+
                 if (result == ScrappingResult.ImplementationFailure && currentImplementation != PageFetcherImplementation.Puppeteer)
                 {
                     SwitchToPuppeteer();
                     await ScrapChapters(url, groups, chapterRange, skipMango);
                     return;
                 }
+
                 LogScrappingResult(result);
             }
             catch (OperationCanceledException)
@@ -69,11 +64,13 @@ namespace TMOScrapper.Core
             try
             {
                 var tupleResult = await scrapper.ScrapScanGroups(url);
+
                 if (tupleResult.result == ScrappingResult.ImplementationFailure && currentImplementation != PageFetcherImplementation.Puppeteer)
                 {
                     SwitchToPuppeteer();
                     return await ScrapScanGroups(url);
                 }
+
                 groups = tupleResult.groups;
                 LogScrappingResult(tupleResult.result);
             }

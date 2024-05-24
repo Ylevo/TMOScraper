@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using Polly;
+﻿using Polly;
 using Serilog;
 using System.Text.RegularExpressions;
 using TMOScrapper.Core.PageFetcher;
@@ -67,7 +66,7 @@ namespace TMOScrapper.Core
                 return (ScrappingResult.ImplementationFailure, null);
             }
 
-            List<string> scanGroups = HtmlParser.ParseScanGroups(doc);
+            List<string>? scanGroups = HtmlParser.ParseScanGroups(doc);
 
             if (scanGroups == null || scanGroups.Count == 0)
             {

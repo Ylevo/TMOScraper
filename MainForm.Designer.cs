@@ -274,7 +274,7 @@
             // toolTip_mainForm
             // 
             toolTip_mainForm.AutoPopDelay = 12000;
-            toolTip_mainForm.InitialDelay = 250;
+            toolTip_mainForm.InitialDelay = 350;
             toolTip_mainForm.ReshowDelay = 250;
             // 
             // MainForm

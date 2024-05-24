@@ -1,23 +1,12 @@
-using HtmlAgilityPack;
-using PuppeteerExtraSharp.Plugins.ExtraStealth;
-using PuppeteerExtraSharp;
-using PuppeteerSharp;
-using System.Net;
-using System.Text.RegularExpressions;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Windows.Forms.Integration;
-using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using TMOScrapper.Core;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows.Controls;
 using System.Windows;
 using Brushes = System.Windows.Media.Brushes;
-using FontFamily = System.Windows.Media.FontFamily;
 using Serilog;
 using Serilog.Sinks.RichTextBox.Themes;
-using Newtonsoft.Json.Linq;
 using TMOScrapper.Core.PageFetcher;
-using TMOScrapper.Utils;
 using TMOScrapper.Properties;
 
 namespace TMOScrapper

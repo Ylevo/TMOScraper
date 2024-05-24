@@ -147,7 +147,7 @@
             chkBox_split.Size = new Size(90, 19);
             chkBox_split.TabIndex = 9;
             chkBox_split.Text = "Split images";
-            toolTip_optionsForm.SetToolTip(chkBox_split, "When checked, will split images longer than 10000px in height.");
+            toolTip_optionsForm.SetToolTip(chkBox_split, "When checked, will split images longer than 10000 pixels in height.");
             chkBox_split.UseVisualStyleBackColor = true;
             // 
             // numeric_chapterDelay
@@ -176,7 +176,7 @@
             numeric_maxRetries.Name = "numeric_maxRetries";
             numeric_maxRetries.Size = new Size(80, 23);
             numeric_maxRetries.TabIndex = 12;
-            toolTip_optionsForm.SetToolTip(numeric_maxRetries, "Maximum number of retries when fetching pages.");
+            toolTip_optionsForm.SetToolTip(numeric_maxRetries, "Maximum number of retries when trying to fetch a page.");
             // 
             // btn_save
             // 
@@ -227,6 +227,12 @@
             numeric_mangoDelay.Size = new Size(80, 23);
             numeric_mangoDelay.TabIndex = 17;
             toolTip_optionsForm.SetToolTip(numeric_mangoDelay, "Time in milliseconds to wait before scrapping the next mango.");
+            // 
+            // toolTip_optionsForm
+            // 
+            toolTip_optionsForm.AutoPopDelay = 12000;
+            toolTip_optionsForm.InitialDelay = 350;
+            toolTip_optionsForm.ReshowDelay = 250;
             // 
             // OptionsForm
             // 
