@@ -17,7 +17,6 @@ namespace TMOScrapper.Core
         private readonly HtmlDocument doc;
         private ResiliencePipeline retryPipeline;
         private int toSkipMango = 0;
-        private string mainFolder;
         private readonly string language;
         private const string FolderNameTemplate = "{0} [{1}] - {2} [{3}]";
 
@@ -26,7 +25,6 @@ namespace TMOScrapper.Core
         {
             TokenSource = tokenSource;
             doc = document;
-            mainFolder = Settings.Default.MainFolder;
             language = Settings.Default.Language;
             retryPipeline = SetRetryPipeline();
         }
@@ -86,7 +84,8 @@ namespace TMOScrapper.Core
             string mangoTitle,
                 chapterNumber,
                 groupName,
-                currentFolder = "";
+                currentFolder = "",
+                mainFolder = Settings.Default.MainFolder;
             List<string> imgUrls;
 
             try
@@ -149,7 +148,8 @@ namespace TMOScrapper.Core
         {
             string mangoTitle = "",
                chapterNumber,
-               currentFolder = "";
+               currentFolder = "",
+               mainFolder = Settings.Default.MainFolder;
             bool actuallyDidSomething = false,
                 isOneShot = url.Contains("/one_shot/");
             List<string> imgUrls;
@@ -304,17 +304,19 @@ namespace TMOScrapper.Core
 
                 Log.Information($"Done scrapping chapters by \"{groupName[0]}\"");
 
-                if (notFoundMangos.Count > 0)
-                {
-                    Log.Warning($"{notFoundMangos.Count} mango were not found : \n{string.Join("\n", notFoundMangos.ToArray())}");
-                }
-
                 return ScrappingResult.Success;
             }
             catch (PageFetchException ex)
             {
                 Log.Error($"Max retries reached, couldn't fetch the group page : {ex.Message}");
                 return ScrappingResult.ImplementationFailure;
+            }
+            finally
+            {
+                if (notFoundMangos.Count > 0)
+                {
+                    Log.Warning($"{notFoundMangos.Count} mango were not found : \n{string.Join("\n", notFoundMangos.ToArray())}");
+                }
             }
         }
 
