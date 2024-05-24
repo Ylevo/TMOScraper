@@ -25,7 +25,7 @@ namespace TMOScrapper
             cmbBox_puppeteer.SelectedIndex = Settings.Default.AlwaysUsePuppeteer ? cmbBox_puppeteer.FindStringExact("By default") : cmbBox_puppeteer.FindStringExact("As fallback");
             cmbBox_convert.SelectedIndex = cmbBox_convert.FindStringExact(Settings.Default.ConvertFormat);
             chkBox_convert.Checked = Settings.Default.ConvertImages;
-            chkBox_crop.Checked = Settings.Default.SplitImages;
+            chkBox_split.Checked = Settings.Default.SplitImages;
             chkBox_logger.Checked = Settings.Default.FileLogging;
         }
 
@@ -39,7 +39,7 @@ namespace TMOScrapper
             Settings.Default.AlwaysUsePuppeteer = (string)cmbBox_puppeteer.SelectedItem == "By default";
             Settings.Default.ConvertFormat = (string)cmbBox_convert.SelectedItem;
             Settings.Default.ConvertImages = chkBox_convert.Checked;
-            Settings.Default.SplitImages = chkBox_crop.Checked;
+            Settings.Default.SplitImages = chkBox_split.Checked;
             Settings.Default.FileLogging = chkBox_logger.Checked;
 
             Settings.Default.Save();

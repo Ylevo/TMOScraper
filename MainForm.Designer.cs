@@ -21,6 +21,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             btn_download = new Button();
             lbl_mangoUrl = new Label();
             txtBox_mangoUrl = new TextBox();
@@ -44,6 +46,7 @@
             panel_logger = new Panel();
             menuStrip1 = new MenuStrip();
             menuItem_options = new ToolStripMenuItem();
+            toolTip_mainForm = new ToolTip(components);
             ((System.ComponentModel.ISupportInitialize)numeric_chaptersRangeFrom).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_chaptersRangeTo).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_skipMangos).BeginInit();
@@ -76,6 +79,7 @@
             txtBox_mangoUrl.Name = "txtBox_mangoUrl";
             txtBox_mangoUrl.Size = new Size(441, 23);
             txtBox_mangoUrl.TabIndex = 2;
+            toolTip_mainForm.SetToolTip(txtBox_mangoUrl, resources.GetString("txtBox_mangoUrl.ToolTip"));
             txtBox_mangoUrl.TextChanged += TxtBoxMangoUrl_TextChanged;
             // 
             // txtBox_setFolder
@@ -114,6 +118,7 @@
             listBox_scannies.Name = "listBox_scannies";
             listBox_scannies.Size = new Size(397, 76);
             listBox_scannies.TabIndex = 7;
+            toolTip_mainForm.SetToolTip(listBox_scannies, "Select the groups you want to scrap chapters from.");
             listBox_scannies.Visible = false;
             // 
             // chkBox_mangoSubfolder
@@ -126,6 +131,7 @@
             chkBox_mangoSubfolder.Size = new Size(154, 19);
             chkBox_mangoSubfolder.TabIndex = 9;
             chkBox_mangoSubfolder.Text = "Create mango subfolder";
+            toolTip_mainForm.SetToolTip(chkBox_mangoSubfolder, "When checked, will create a subfolder named after each mango scrapped. \r\nDoes not create a subfolder named after the group scrapped.");
             chkBox_mangoSubfolder.UseVisualStyleBackColor = true;
             chkBox_mangoSubfolder.CheckedChanged += chkBox_mangoSubfolder_CheckedChanged;
             // 
@@ -165,6 +171,7 @@
             cmbBox_language.Name = "cmbBox_language";
             cmbBox_language.Size = new Size(121, 23);
             cmbBox_language.TabIndex = 16;
+            toolTip_mainForm.SetToolTip(cmbBox_language, "Use Spanish LATAM when in doubt.");
             cmbBox_language.SelectionChangeCommitted += cmbBox_language_SelectionChangeCommitted;
             // 
             // chkBox_chaptersRange
@@ -175,6 +182,7 @@
             chkBox_chaptersRange.Size = new Size(115, 19);
             chkBox_chaptersRange.TabIndex = 17;
             chkBox_chaptersRange.Text = "Chapters Range :";
+            toolTip_mainForm.SetToolTip(chkBox_chaptersRange, "When checked, will only scrap the chapters numbered in that range.");
             chkBox_chaptersRange.UseVisualStyleBackColor = true;
             // 
             // numeric_chaptersRangeFrom
@@ -216,6 +224,7 @@
             chkBox_skipMangos.Size = new Size(54, 19);
             chkBox_skipMangos.TabIndex = 21;
             chkBox_skipMangos.Text = "Skip :";
+            toolTip_mainForm.SetToolTip(chkBox_skipMangos, "When checked, will skip that many mango when group scrapping.");
             chkBox_skipMangos.UseVisualStyleBackColor = true;
             // 
             // numeric_skipMangos
@@ -235,6 +244,7 @@
             btn_selectAllScannies.Size = new Size(121, 23);
             btn_selectAllScannies.TabIndex = 23;
             btn_selectAllScannies.Text = "Select all";
+            toolTip_mainForm.SetToolTip(btn_selectAllScannies, "It could work better than that.");
             btn_selectAllScannies.UseVisualStyleBackColor = true;
             btn_selectAllScannies.Click += Btn_selectAllScannies_Click;
             // 
@@ -260,6 +270,12 @@
             menuItem_options.Size = new Size(61, 20);
             menuItem_options.Text = "Options";
             menuItem_options.Click += MenuItemOptions_Click;
+            // 
+            // toolTip_mainForm
+            // 
+            toolTip_mainForm.AutoPopDelay = 12000;
+            toolTip_mainForm.InitialDelay = 250;
+            toolTip_mainForm.ReshowDelay = 250;
             // 
             // MainForm
             // 
@@ -328,5 +344,6 @@
         private Panel panel_logger;
         private MenuStrip menuStrip1;
         private ToolStripMenuItem menuItem_options;
+        private ToolTip toolTip_mainForm;
     }
 }

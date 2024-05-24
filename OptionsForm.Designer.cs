@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OptionsForm));
             lbl_domain = new Label();
             txtBox_domain = new TextBox();
             lbl_puppeteer = new Label();
@@ -37,7 +39,7 @@
             lbl_chapterDelay = new Label();
             chkBox_convert = new CheckBox();
             cmbBox_convert = new ComboBox();
-            chkBox_crop = new CheckBox();
+            chkBox_split = new CheckBox();
             numeric_chapterDelay = new NumericUpDown();
             numeric_retryDelay = new NumericUpDown();
             numeric_maxRetries = new NumericUpDown();
@@ -46,6 +48,7 @@
             chkBox_logger = new CheckBox();
             lbl_mangoDelay = new Label();
             numeric_mangoDelay = new NumericUpDown();
+            toolTip_optionsForm = new ToolTip(components);
             ((System.ComponentModel.ISupportInitialize)numeric_chapterDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_retryDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_maxRetries).BeginInit();
@@ -67,6 +70,7 @@
             txtBox_domain.Name = "txtBox_domain";
             txtBox_domain.Size = new Size(121, 23);
             txtBox_domain.TabIndex = 1;
+            toolTip_optionsForm.SetToolTip(txtBox_domain, "Don't change it unless TMO changed theirs.");
             // 
             // lbl_puppeteer
             // 
@@ -85,6 +89,7 @@
             cmbBox_puppeteer.Name = "cmbBox_puppeteer";
             cmbBox_puppeteer.Size = new Size(121, 23);
             cmbBox_puppeteer.TabIndex = 3;
+            toolTip_optionsForm.SetToolTip(cmbBox_puppeteer, resources.GetString("cmbBox_puppeteer.ToolTip"));
             // 
             // lbl_maxRetries
             // 
@@ -120,7 +125,8 @@
             chkBox_convert.Name = "chkBox_convert";
             chkBox_convert.Size = new Size(109, 19);
             chkBox_convert.TabIndex = 7;
-            chkBox_convert.Text = "Convert Images";
+            chkBox_convert.Text = "Convert images";
+            toolTip_optionsForm.SetToolTip(chkBox_convert, "When checked, will convert images to the picked format.");
             chkBox_convert.UseVisualStyleBackColor = true;
             // 
             // cmbBox_convert
@@ -131,16 +137,18 @@
             cmbBox_convert.Name = "cmbBox_convert";
             cmbBox_convert.Size = new Size(101, 23);
             cmbBox_convert.TabIndex = 8;
+            toolTip_optionsForm.SetToolTip(cmbBox_convert, "JPEG quality is set to 90.\r\nUse PNG 8 bpp for best compression if the chapter(s) only have B&W images.\r\nOtherwise, use JPEG. Or PNG if you like wasting space.");
             // 
-            // chkBox_crop
+            // chkBox_split
             // 
-            chkBox_crop.AutoSize = true;
-            chkBox_crop.Location = new Point(12, 106);
-            chkBox_crop.Name = "chkBox_crop";
-            chkBox_crop.Size = new Size(93, 19);
-            chkBox_crop.TabIndex = 9;
-            chkBox_crop.Text = "Crop Images";
-            chkBox_crop.UseVisualStyleBackColor = true;
+            chkBox_split.AutoSize = true;
+            chkBox_split.Location = new Point(12, 106);
+            chkBox_split.Name = "chkBox_split";
+            chkBox_split.Size = new Size(90, 19);
+            chkBox_split.TabIndex = 9;
+            chkBox_split.Text = "Split images";
+            toolTip_optionsForm.SetToolTip(chkBox_split, "When checked, will split images longer than 10000px in height.");
+            chkBox_split.UseVisualStyleBackColor = true;
             // 
             // numeric_chapterDelay
             // 
@@ -150,6 +158,7 @@
             numeric_chapterDelay.Name = "numeric_chapterDelay";
             numeric_chapterDelay.Size = new Size(80, 23);
             numeric_chapterDelay.TabIndex = 10;
+            toolTip_optionsForm.SetToolTip(numeric_chapterDelay, "Time in milliseconds to wait before scrapping the next chapter.");
             // 
             // numeric_retryDelay
             // 
@@ -159,6 +168,7 @@
             numeric_retryDelay.Name = "numeric_retryDelay";
             numeric_retryDelay.Size = new Size(80, 23);
             numeric_retryDelay.TabIndex = 11;
+            toolTip_optionsForm.SetToolTip(numeric_retryDelay, "Time in milliseconds to wait before retrying to fetch a page.");
             // 
             // numeric_maxRetries
             // 
@@ -166,6 +176,7 @@
             numeric_maxRetries.Name = "numeric_maxRetries";
             numeric_maxRetries.Size = new Size(80, 23);
             numeric_maxRetries.TabIndex = 12;
+            toolTip_optionsForm.SetToolTip(numeric_maxRetries, "Maximum number of retries when fetching pages.");
             // 
             // btn_save
             // 
@@ -195,6 +206,7 @@
             chkBox_logger.Size = new Size(124, 19);
             chkBox_logger.TabIndex = 15;
             chkBox_logger.Text = "Enable file logging";
+            toolTip_optionsForm.SetToolTip(chkBox_logger, "When checked, will save the logs to a text file under the folder Logs.");
             chkBox_logger.UseVisualStyleBackColor = true;
             // 
             // lbl_mangoDelay
@@ -214,6 +226,7 @@
             numeric_mangoDelay.Name = "numeric_mangoDelay";
             numeric_mangoDelay.Size = new Size(80, 23);
             numeric_mangoDelay.TabIndex = 17;
+            toolTip_optionsForm.SetToolTip(numeric_mangoDelay, "Time in milliseconds to wait before scrapping the next mango.");
             // 
             // OptionsForm
             // 
@@ -228,7 +241,7 @@
             Controls.Add(numeric_maxRetries);
             Controls.Add(numeric_retryDelay);
             Controls.Add(numeric_chapterDelay);
-            Controls.Add(chkBox_crop);
+            Controls.Add(chkBox_split);
             Controls.Add(cmbBox_convert);
             Controls.Add(chkBox_convert);
             Controls.Add(lbl_chapterDelay);
@@ -259,7 +272,7 @@
         private Label lbl_chapterDelay;
         private CheckBox chkBox_convert;
         private ComboBox cmbBox_convert;
-        private CheckBox chkBox_crop;
+        private CheckBox chkBox_split;
         private NumericUpDown numeric_chapterDelay;
         private NumericUpDown numeric_retryDelay;
         private NumericUpDown numeric_maxRetries;
@@ -268,5 +281,6 @@
         private CheckBox chkBox_logger;
         private Label lbl_mangoDelay;
         private NumericUpDown numeric_mangoDelay;
+        private ToolTip toolTip_optionsForm;
     }
 }
