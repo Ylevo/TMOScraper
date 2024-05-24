@@ -85,10 +85,11 @@ namespace TMOScrapper.Core.PageFetcher
         private async Task<string> GetChapter(string url, IPage page, CancellationToken token)
         {
             bool goodToGo = true;
-            token.ThrowIfCancellationRequested();
 
             try
             {
+                token.ThrowIfCancellationRequested();
+
                 await page.GoToAsync(url, navigationOptionsDefault);
 
                 if (page.Url.Contains("/view_uploads/"))
@@ -98,6 +99,8 @@ namespace TMOScrapper.Core.PageFetcher
             }
             catch (NavigationException) { }
             catch (TimeoutException) { }
+
+            token.ThrowIfCancellationRequested();
 
             switch (lastResponse.Status)
             {

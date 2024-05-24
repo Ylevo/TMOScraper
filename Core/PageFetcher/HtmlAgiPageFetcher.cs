@@ -30,24 +30,25 @@ namespace TMOScrapper.Core.PageFetcher
                 req.Referer = Settings.Default.Domain;
                 return true;
             };
+            webClient.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0";
         }
 
         public async Task<string> GetPage(string url, CancellationToken token, PageType type = PageType.Default)
         {
             return type switch
             {
-                PageType.Default => GetDefault(url, token),
+                PageType.Default => await GetDefault(url, token),
                 PageType.Chapter => await GetChapter(url, token),
                 _ => "",
             };
         }
 
-        private string GetDefault(string url, CancellationToken token)
+        private async Task<string> GetDefault(string url, CancellationToken token)
         {
-            token.ThrowIfCancellationRequested();
+            // LoadFromWebAsync has terrible implementation and I cba to modify the lib
+            document = await Task.Run(() => webClient.Load(url), token);
 
-            // LoadFromWebAsync has terrible implementation for some reason
-            document = webClient.Load(url);
+            token.ThrowIfCancellationRequested();
 
             return webClient.StatusCode switch
             {
@@ -65,7 +66,9 @@ namespace TMOScrapper.Core.PageFetcher
 
             token.ThrowIfCancellationRequested();
 
-            document = webClient.Load(url);
+            document = await Task.Run(() => webClient.Load(url), token);
+
+            token.ThrowIfCancellationRequested();
 
             switch (webClient.StatusCode)
             {

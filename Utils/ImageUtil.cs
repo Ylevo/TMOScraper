@@ -12,7 +12,7 @@ namespace TMOScrapper.Utils
 {
     public static class ImageUtil
     {
-        public static void ConvertImages(string folder)
+        public static async Task ConvertImages(string folder, CancellationToken token)
         {
             try
             {
@@ -21,11 +21,12 @@ namespace TMOScrapper.Utils
 
                 foreach (string originalImage in imagesPaths)
                 {
+                    token.ThrowIfCancellationRequested();
                     using MagickImageCollection imgCollection = new(originalImage);
 
                     if (imgCollection.Count > 1)
                     {
-                        imgCollection.Write(Path.ChangeExtension(originalImage, "gif"), MagickFormat.Gif);
+                        await imgCollection.WriteAsync(Path.ChangeExtension(originalImage, "gif"), MagickFormat.Gif, token);
                     }
                     else
                     {
@@ -46,21 +47,21 @@ namespace TMOScrapper.Utils
 
                         string format = Settings.Default.ConvertFormat == "JPEG" ? "jpeg" : "png";
                         Log.Information($"Converting {Path.GetFileName(originalImage)} to {format}.");
-                        imgCollection.Write(Path.ChangeExtension(originalImage, format));
+                        await imgCollection.WriteAsync(Path.ChangeExtension(originalImage, format), token);
                         File.Delete(originalImage);
                     }
                 }
 
                 Log.Information("Finished images conversion.");
             }
-            catch(Exception ex)
+            catch(Exception ex) when (ex is not OperationCanceledException)
             {
                 Log.Error($"Unexpected error while converting images : {ex.Message}");
                 Log.Error($"Stacktrace : {ex.StackTrace}");
             }
         }
 
-        public static void SplitImages(string folder)
+        public static async Task SplitImages(string folder, CancellationToken token)
         {
             try 
             {
@@ -69,6 +70,8 @@ namespace TMOScrapper.Utils
 
                 foreach (string file in files)
                 {
+                    token.ThrowIfCancellationRequested();
+
                     using MagickImage originalImg = new(file);
                     int originalImgHeight = originalImg.Height;
 
@@ -85,7 +88,7 @@ namespace TMOScrapper.Utils
                             MagickGeometry size = new(0, sizeOfSlice * i, newSlice.Width, sizeOfSlice);
                             newSlice.Crop(size);
                             newSlice.RePage();
-                            newSlice.Write(AppendToFileName(file, "-" + $"{i + 1}".PadLeft(3, '0')));
+                            await newSlice.WriteAsync(AppendToFileName(file, "-" + $"{i + 1}".PadLeft(3, '0')), token);
                         }
 
                         File.Delete(file);
@@ -94,7 +97,7 @@ namespace TMOScrapper.Utils
 
                 Log.Information("Finished images cropping.");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 Log.Error($"Unexpected error while cropping images : {ex.Message}");
                 Log.Error($"Stacktrace : {ex.StackTrace}");

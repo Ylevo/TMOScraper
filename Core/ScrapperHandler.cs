@@ -12,6 +12,7 @@ namespace TMOScrapper.Core
 {
     public enum PageFetcherImplementation { HtmlAgi, Puppeteer };
 
+
     internal class ScrapperHandler
     {
         private readonly Scrapper scrapper;
@@ -32,7 +33,7 @@ namespace TMOScrapper.Core
             return scrapper.TokenSource;
         }
 
-        public async Task StartScrapping(
+        public async Task ScrapChapters(
             string url,
             string[]? groups,
             (bool skipChapters, decimal from, decimal to) chapterRange,
@@ -85,6 +86,7 @@ namespace TMOScrapper.Core
         }
         public void SwitchToPuppeteer()
         {
+            Log.Information("Switching to puppeteer implementation.");
             currentImplementation = PageFetcherImplementation.Puppeteer;
             scrapper.PageFetcher = pageFetcherDict[currentImplementation]();
         }

@@ -1,4 +1,5 @@
-﻿using Polly;
+﻿using Newtonsoft.Json.Linq;
+using Polly;
 using Serilog;
 using System.Text.RegularExpressions;
 using TMOScrapper.Core.PageFetcher;
@@ -59,6 +60,11 @@ namespace TMOScrapper.Core
             {
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
             }
+            catch(UriFormatException ex)
+            {
+                Log.Error("404 scannies not found. Check your URL.");
+                return (true, null);
+            }
             catch(PageFetchException ex)
             {
                 Log.Error(ex.Message);
@@ -70,7 +76,7 @@ namespace TMOScrapper.Core
             if (scanGroups == null || scanGroups.Count == 0)
             {
                 Log.Error("404 scannies not found. Check your URL.");
-                return (false, null);
+                return (true, null);
             }
 
             return (true, scanGroups);
@@ -116,12 +122,12 @@ namespace TMOScrapper.Core
 
                     if (Settings.Default.ConvertImages)
                     {
-                        ImageUtil.ConvertImages(currentFolder);
+                        await ImageUtil.ConvertImages(currentFolder, TokenSource.Token);
                     }
 
                     if (Settings.Default.SplitImages)
                     {
-                        ImageUtil.SplitImages(currentFolder);
+                        await ImageUtil.SplitImages(currentFolder, TokenSource.Token);
                     }
                 }
                 return true;
@@ -180,6 +186,8 @@ namespace TMOScrapper.Core
 
                 foreach (var chapter in chapters)
                 {
+                    TokenSource.Token.ThrowIfCancellationRequested();
+
                     actuallyDidSomething = false;
                     chapterNumber = isOneShot ? "000" : "c" + chapter.Key;
                     Log.Information($"Scrapping chapter {chapterNumber}");
@@ -210,12 +218,12 @@ namespace TMOScrapper.Core
 
                             if (Settings.Default.ConvertImages)
                             {
-                                ImageUtil.ConvertImages(currentFolder);
+                                await ImageUtil.ConvertImages(currentFolder, TokenSource.Token);
                             }
 
                             if (Settings.Default.SplitImages) 
                             {
-                                ImageUtil.SplitImages(currentFolder);
+                                await ImageUtil.SplitImages(currentFolder, TokenSource.Token);
                             }
 
                             Log.Information($"Waiting {Settings.Default.ChapterDelay} ms before next chapter ...");
@@ -309,7 +317,7 @@ namespace TMOScrapper.Core
                 OnRetry = static args =>
                 {
                     Log.Error(args.Outcome.Exception.Message);
-                    Log.Error($"Retrying ... (attempt {args.AttemptNumber} out of {Settings.Default.MaxRetries}");
+                    Log.Error($"Retrying ... (attempt {args.AttemptNumber+1} out of {Settings.Default.MaxRetries}");
                     return default;
                 }
             };

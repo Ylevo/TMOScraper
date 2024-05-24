@@ -27,7 +27,7 @@ namespace TMOScrapper
         private readonly IServiceProvider serviceProvider;
         private bool selectGroupsToggle = true;
         private CancellationTokenSource? cancellationToken;
-
+        private System.Windows.Controls.RichTextBox? loggerBox;
         private static readonly object loggerSync = new object();
 
         public MainForm(IServiceProvider serviceProvider)
@@ -38,7 +38,7 @@ namespace TMOScrapper
             Thread.CurrentThread.CurrentCulture = customCulture;
 
             InitializeComponent();
-            AddRichTextBoxLogger();
+            SetupLogger();
 
             cmbBox_language.DataSource = new BindingSource(
                 new Dictionary<string, string> { { "Spanish", "es" }, { "Spanish (LATAM)", "es-la" } },
@@ -48,7 +48,7 @@ namespace TMOScrapper
             txtBox_setFolder.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         }
 
-        private void AddRichTextBoxLogger()
+        private void SetupLogger()
         {
             var richTextBoxHost = new ElementHost
             {
@@ -69,7 +69,7 @@ namespace TMOScrapper
             {
                 wpfRichTextBox.ScrollToEnd();
             };
-
+            loggerBox = wpfRichTextBox;
             richTextBoxHost.Child = wpfRichTextBox;
             const string outputTemplate = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
 
@@ -142,10 +142,11 @@ namespace TMOScrapper
         private async void BtnDownload_Click(object sender, EventArgs e)
         {
             var groups = listBox_scannies.CheckedItems.Cast<string>().ToArray();
-            // clear logger?
+
+            loggerBox.Document.Blocks.Clear();
             ToggleUI();
 
-            await GetNewScrapper().StartScrapping(
+            await GetNewScrapper().ScrapChapters(
                 txtBox_mangoUrl.Text,
                 groups.Length == 0 ? null : groups,
                 (chkBox_chaptersRange.Checked, numeric_chaptersRangeFrom.Value, numeric_chaptersRangeTo.Value),
@@ -167,8 +168,11 @@ namespace TMOScrapper
 
         private void BtnStop_Click(object sender, EventArgs e)
         {
-            cancellationToken?.Cancel();
-            Log.Warning("Abortion requested. Aborting ...");
+            if (cancellationToken != null && cancellationToken.Token.CanBeCanceled)
+            {
+                cancellationToken?.Cancel();
+                Log.Warning("Abortion requested. Aborting ...");
+            }
         }
 
         private void TxtBoxMangoUrl_TextChanged(object sender, EventArgs e)
