@@ -35,7 +35,7 @@ namespace TMOScrapper.Core
             int skipMango)
         {
             toSkipMango = toSkipMango < skipMango ? skipMango : toSkipMango;
-            string pattern = $@"(?<={domainName}\/)((?<Bulk>library\/(manga|manhua|manhwa|doujinshi|one_shot)\/)|(?<Single>view_uploads|viewer\/)|(?<Group>groups\/(.*)proyects))";
+            string pattern = $@"(?<={domainName}\/)((?<Bulk>library\/(manga|manhua|manhwa|doujinshi|one_shot|novel|oel)\/)|(?<Single>view_uploads|viewer\/)|(?<Group>groups\/(.*)proyects))";
             string pageType = Regex.Match(url, pattern, RegexOptions.ExplicitCapture).Groups.Values.Where(g => g.Success && g.Name != "0").FirstOrDefault()?.Name ?? "";
             switch (pageType)
             {

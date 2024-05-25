@@ -120,6 +120,7 @@ namespace TMOScrapper
 
             loggerBox.Document.Blocks.Clear();
             ToggleUI();
+
             List<string>? groups = await GetNewScrapper().ScrapScanGroups(txtBox_mangoUrl.Text);
 
             if (groups != null)
@@ -143,7 +144,7 @@ namespace TMOScrapper
                 txtBox_mangoUrl.Text,
                 groups.Length == 0 ? null : groups,
                 (chkBox_chaptersRange.Checked, numeric_chaptersRangeFrom.Value, numeric_chaptersRangeTo.Value),
-                (int)numeric_skipMangos.Value
+                chkBox_skipMangos.Checked ? (int)numeric_skipMangos.Value : 0
                 );
 
             ToggleUI();
