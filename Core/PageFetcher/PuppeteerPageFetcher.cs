@@ -12,8 +12,8 @@ namespace TMOScrapper.Core.PageFetcher
     {
         private static IBrowser? browser = null;
         private IResponse? lastResponse = null;
-        private readonly NavigationOptions navigationOptionsDefault = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 6000 };
-        private readonly NavigationOptions navigationOptionsFast = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle2 }, Timeout = 4500 };
+        private readonly NavigationOptions navigationOptionsDefault = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 4000 };
+        private readonly NavigationOptions navigationOptionsFast = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle2 }, Timeout = 3500 };
 
         public PuppeteerPageFetcher() { }
 
@@ -60,10 +60,11 @@ namespace TMOScrapper.Core.PageFetcher
 
             try
             {
-                await page.GoToAsync(url, navigationOptionsFast);
+                await page.GoToAsync(url, navigationOptionsDefault);
             }
             catch (TimeoutException) { }
             catch (NavigationException) { }
+            
 
             return lastResponse.Status switch
             {
@@ -87,11 +88,17 @@ namespace TMOScrapper.Core.PageFetcher
 
                 if (page.Url.Contains("/view_uploads/"))
                 {
-                    await page.WaitForNavigationAsync(navigationOptionsDefault);
+                    await page.WaitForNavigationAsync(navigationOptionsFast);
                 }
             }
-            catch (NavigationException) { }
-            catch (TimeoutException) { }
+            catch (Exception ex) when (ex is NavigationException || ex is TimeoutException)
+            {
+                string content = await page.GetContentAsync();
+                if (content.Contains(@"Ops! La URL a la que intenta acceder no se encuentra."))
+                {
+                    throw new PageFetchFailureException(HttpStatusCode.MisdirectedRequest);
+                }
+            }
 
             token.ThrowIfCancellationRequested();
 
