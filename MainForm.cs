@@ -162,7 +162,7 @@ namespace TMOScrapper
 
         private void BtnStop_Click(object sender, EventArgs e)
         {
-            if (cancellationToken != null && cancellationToken.Token.CanBeCanceled)
+            if (cancellationToken != null && !cancellationToken.Token.IsCancellationRequested)
             {
                 cancellationToken?.Cancel();
                 Log.Warning("Abortion requested. Aborting ...");

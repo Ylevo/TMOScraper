@@ -41,7 +41,7 @@ namespace TMOScrapper.Utils
 
                         string format = Settings.Default.ConvertFormat == "JPEG" ? "jpeg" : "png";
                         Log.Information($"Converting {Path.GetFileName(originalImage)} to {format}.");
-                        await imgCollection.WriteAsync(Path.ChangeExtension(originalImage, format), token);
+                        await newImg.WriteAsync(Path.ChangeExtension(originalImage, format), token);
                         File.Delete(originalImage);
                     }
                 }
