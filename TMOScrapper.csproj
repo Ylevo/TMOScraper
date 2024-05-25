@@ -9,6 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <StartupObject>TMOScrapper.Program</StartupObject>
 	<PublishSingleFile>true</PublishSingleFile>
+	<SignAssembly>True</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>
