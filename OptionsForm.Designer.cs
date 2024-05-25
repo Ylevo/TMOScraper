@@ -49,6 +49,7 @@
             lbl_mangoDelay = new Label();
             numeric_mangoDelay = new NumericUpDown();
             toolTip_optionsForm = new ToolTip(components);
+            chkBox_verboseLogging = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)numeric_chapterDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_retryDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_maxRetries).BeginInit();
@@ -180,7 +181,7 @@
             // 
             // btn_save
             // 
-            btn_save.Location = new Point(280, 151);
+            btn_save.Location = new Point(280, 174);
             btn_save.Name = "btn_save";
             btn_save.Size = new Size(75, 23);
             btn_save.TabIndex = 13;
@@ -190,7 +191,7 @@
             // 
             // btn_cancel
             // 
-            btn_cancel.Location = new Point(361, 151);
+            btn_cancel.Location = new Point(361, 174);
             btn_cancel.Name = "btn_cancel";
             btn_cancel.Size = new Size(75, 23);
             btn_cancel.TabIndex = 14;
@@ -234,11 +235,23 @@
             toolTip_optionsForm.InitialDelay = 350;
             toolTip_optionsForm.ReshowDelay = 250;
             // 
+            // chkBox_verboseLogging
+            // 
+            chkBox_verboseLogging.AutoSize = true;
+            chkBox_verboseLogging.Location = new Point(12, 156);
+            chkBox_verboseLogging.Name = "chkBox_verboseLogging";
+            chkBox_verboseLogging.Size = new Size(149, 19);
+            chkBox_verboseLogging.TabIndex = 18;
+            chkBox_verboseLogging.Text = "Enable verbose logging";
+            toolTip_optionsForm.SetToolTip(chkBox_verboseLogging, "When checked, will log files changes such as download/convert/split individually.");
+            chkBox_verboseLogging.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(453, 186);
+            ClientSize = new Size(453, 209);
+            Controls.Add(chkBox_verboseLogging);
             Controls.Add(numeric_mangoDelay);
             Controls.Add(lbl_mangoDelay);
             Controls.Add(chkBox_logger);
@@ -288,5 +301,6 @@
         private Label lbl_mangoDelay;
         private NumericUpDown numeric_mangoDelay;
         private ToolTip toolTip_optionsForm;
+        private CheckBox chkBox_verboseLogging;
     }
 }

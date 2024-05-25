@@ -32,7 +32,7 @@ namespace TMOScrapper.Utils
             token.ThrowIfCancellationRequested();
             using var s = await client.GetStreamAsync(uri, token);
             using var fs = new FileStream(path, FileMode.CreateNew);
-            Log.Information($"Downloading file {filename} ...");
+            Log.Verbose($"Downloading file {filename} ...");
             await s.CopyToAsync(fs, token);
         }
     }

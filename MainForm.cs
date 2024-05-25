@@ -66,7 +66,12 @@ namespace TMOScrapper
                 .MinimumLevel.Verbose()
                 .WriteTo.Logger(lc => lc
                     .Filter.ByExcluding(log => log.Level == Serilog.Events.LogEventLevel.Fatal)
-                    .WriteTo.RichTextBox(wpfRichTextBox, theme: LoggerTheme.MyTheme, outputTemplate: outputTemplate, syncRoot: loggerSync));
+                    .WriteTo.RichTextBox(
+                    wpfRichTextBox,
+                    restrictedToMinimumLevel: Settings.Default.VerboseLogging ? Serilog.Events.LogEventLevel.Verbose : Serilog.Events.LogEventLevel.Information,
+                    theme: LoggerTheme.MyTheme, 
+                    outputTemplate: outputTemplate, 
+                    syncRoot: loggerSync));
 
             if (Settings.Default.FileLogging)
             {

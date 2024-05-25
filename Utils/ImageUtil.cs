@@ -40,7 +40,7 @@ namespace TMOScrapper.Utils
                         }
 
                         string format = Settings.Default.ConvertFormat == "JPEG" ? "jpeg" : "png";
-                        Log.Information($"Converting {Path.GetFileName(originalImage)} to {format}.");
+                        Log.Verbose($"Converting {Path.GetFileName(originalImage)} to {format}.");
                         await newImg.WriteAsync(Path.ChangeExtension(originalImage, format), token).ConfigureAwait(false);
                         File.Delete(originalImage);
                     }
@@ -74,7 +74,7 @@ namespace TMOScrapper.Utils
                         int numberOfSlices = (int)Math.Ceiling((decimal)originalImgHeight / 5000);
                         int sizeOfSlice = (int)Math.Ceiling((decimal)originalImgHeight / numberOfSlices);
 
-                        Log.Information($"Splitting {Path.GetFileName(file)} into {numberOfSlices} parts.");
+                        Log.Verbose($"Splitting {Path.GetFileName(file)} into {numberOfSlices} parts.");
 
                         for (int i = 0; i < numberOfSlices; i++)
                         {

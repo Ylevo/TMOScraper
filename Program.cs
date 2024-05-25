@@ -4,6 +4,7 @@ using TMOScrapper.Core;
 using Polly.Extensions;
 using Microsoft.Extensions.Logging;
 using TMOScrapper.Utils;
+using TMOScrapper.Properties;
 
 namespace TMOScrapper
 {
@@ -20,6 +21,12 @@ namespace TMOScrapper
             ApplicationConfiguration.Initialize();
             var services = new ServiceCollection();
             ConfigureServices(services);
+            if (Settings.Default.UpgradeRequired)
+            {
+                Settings.Default.Upgrade();
+                Settings.Default.UpgradeRequired = false;
+                Settings.Default.Save();
+            }
             using (ServiceProvider serviceProvider = services.BuildServiceProvider())
             {
                 var mainForm = serviceProvider.GetRequiredService<MainForm>();

@@ -41,5 +41,11 @@
     <Setting Name="MangoDelay" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">2000</Value>
     </Setting>
+    <Setting Name="UpgradeRequired" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="VerboseLogging" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

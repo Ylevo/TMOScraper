@@ -18,6 +18,7 @@ namespace TMOScrapper
             chkBox_convert.Checked = Settings.Default.ConvertImages;
             chkBox_split.Checked = Settings.Default.SplitImages;
             chkBox_logger.Checked = Settings.Default.FileLogging;
+            chkBox_verboseLogging.Checked = Settings.Default.VerboseLogging;
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
@@ -32,6 +33,7 @@ namespace TMOScrapper
             Settings.Default.ConvertImages = chkBox_convert.Checked;
             Settings.Default.SplitImages = chkBox_split.Checked;
             Settings.Default.FileLogging = chkBox_logger.Checked;
+            Settings.Default.VerboseLogging = chkBox_verboseLogging.Checked;
 
             Settings.Default.Save();
             Close();
