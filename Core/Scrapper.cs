@@ -52,6 +52,8 @@ namespace TMOScrapper.Core
 
         public async Task<(ScrappingResult result, List<string>? groups)> ScrapScanGroups(string url)
         {
+            Log.Information("Scrapping scannies.");
+
             try
             {
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));

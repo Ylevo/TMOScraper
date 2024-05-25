@@ -118,6 +118,7 @@ namespace TMOScrapper
                 return;
             }
 
+            loggerBox.Document.Blocks.Clear();
             ToggleUI();
             List<string>? groups = await GetNewScrapper().ScrapScanGroups(txtBox_mangoUrl.Text);
 
