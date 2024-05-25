@@ -20,7 +20,7 @@ namespace TMOScrapper.Utils
 
                     if (imgCollection.Count > 1)
                     {
-                        await imgCollection.WriteAsync(Path.ChangeExtension(originalImage, "gif"), MagickFormat.Gif, token);
+                        await imgCollection.WriteAsync(Path.ChangeExtension(originalImage, "gif"), MagickFormat.Gif, token).ConfigureAwait(false);
                     }
                     else
                     {
@@ -41,7 +41,7 @@ namespace TMOScrapper.Utils
 
                         string format = Settings.Default.ConvertFormat == "JPEG" ? "jpeg" : "png";
                         Log.Information($"Converting {Path.GetFileName(originalImage)} to {format}.");
-                        await newImg.WriteAsync(Path.ChangeExtension(originalImage, format), token);
+                        await newImg.WriteAsync(Path.ChangeExtension(originalImage, format), token).ConfigureAwait(false);
                         File.Delete(originalImage);
                     }
                 }
@@ -82,7 +82,7 @@ namespace TMOScrapper.Utils
                             MagickGeometry size = new(0, sizeOfSlice * i, newSlice.Width, sizeOfSlice);
                             newSlice.Crop(size);
                             newSlice.RePage();
-                            await newSlice.WriteAsync(AppendToFileName(file, "-" + $"{i + 1}".PadLeft(3, '0')), token);
+                            await newSlice.WriteAsync(AppendToFileName(file, "-" + $"{i + 1}".PadLeft(3, '0')), token).ConfigureAwait(false);
                         }
 
                         File.Delete(file);
