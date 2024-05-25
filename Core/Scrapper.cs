@@ -65,7 +65,7 @@ namespace TMOScrapper.Core
             catch(PageFetchException ex)
             {
                 Log.Error(ex.Message);
-                return (ScrappingResult.ImplementationFailure, null);
+                return (ScrappingResult.PageFetchingFailure, null);
             }
 
             List<string>? scanGroups = HtmlParser.ParseScanGroups(doc);
@@ -134,7 +134,7 @@ namespace TMOScrapper.Core
             catch (PageFetchException ex)
             {
                 Log.Error(ex.Message);
-                return ScrappingResult.ImplementationFailure;
+                return ScrappingResult.PageFetchingFailure;
             }
             finally
             {
@@ -249,8 +249,8 @@ namespace TMOScrapper.Core
             }
             catch (PageFetchException ex)
             {
-                Log.Error($"Max retries reached : {ex.Message}");
-                return ScrappingResult.ImplementationFailure;
+                Log.Error(ex.Message);
+                return ScrappingResult.PageFetchingFailure;
             }
             finally
             {
@@ -309,8 +309,8 @@ namespace TMOScrapper.Core
             }
             catch (PageFetchException ex)
             {
-                Log.Error($"Max retries reached, couldn't fetch the group page : {ex.Message}");
-                return ScrappingResult.ImplementationFailure;
+                Log.Error(ex.Message);
+                return ScrappingResult.PageFetchingFailure;
             }
             finally
             {

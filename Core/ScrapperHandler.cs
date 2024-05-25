@@ -5,7 +5,7 @@ using TMOScrapper.Properties;
 namespace TMOScrapper.Core
 {
     public enum PageFetcherImplementation { HtmlAgi, Puppeteer };
-    public enum ScrappingResult { Success, ImplementationFailure, NoGroupSelected, PageNotFound };
+    public enum ScrappingResult { Success, PageFetchingFailure, NoGroupSelected, PageNotFound };
 
     internal class ScrapperHandler
     {
@@ -37,7 +37,7 @@ namespace TMOScrapper.Core
             {
                 ScrappingResult result = await scrapper.ScrapChapters(url, groups, chapterRange, skipMango);
 
-                if (result == ScrappingResult.ImplementationFailure && currentImplementation != PageFetcherImplementation.Puppeteer)
+                if (result == ScrappingResult.PageFetchingFailure && currentImplementation != PageFetcherImplementation.Puppeteer)
                 {
                     SwitchToPuppeteer();
                     await ScrapChapters(url, groups, chapterRange, skipMango);
@@ -65,7 +65,7 @@ namespace TMOScrapper.Core
             {
                 var tupleResult = await scrapper.ScrapScanGroups(url);
 
-                if (tupleResult.result == ScrappingResult.ImplementationFailure && currentImplementation != PageFetcherImplementation.Puppeteer)
+                if (tupleResult.result == ScrappingResult.PageFetchingFailure && currentImplementation != PageFetcherImplementation.Puppeteer)
                 {
                     SwitchToPuppeteer();
                     return await ScrapScanGroups(url);
@@ -103,8 +103,8 @@ namespace TMOScrapper.Core
                 case ScrappingResult.PageNotFound:
                     Log.Error("Scrapping failed : wrong URL or page not found.");
                     break;
-                case ScrappingResult.ImplementationFailure:
-                    Log.Error("Scrapping failed : current implementations might be broken.");
+                case ScrappingResult.PageFetchingFailure:
+                    Log.Error("Scrapping failed : couldn't fetch the page(s). Current implementation might be broken or you're banned/ratelimited.");
                     break;
                 case ScrappingResult.NoGroupSelected:
                     Log.Error("Scrapping failed : no group selected.");

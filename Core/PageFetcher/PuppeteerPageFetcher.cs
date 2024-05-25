@@ -12,8 +12,8 @@ namespace TMOScrapper.Core.PageFetcher
     {
         private static IBrowser? browser = null;
         private IResponse? lastResponse = null;
-        private readonly NavigationOptions navigationOptionsDefault = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 8000 };
-        private readonly NavigationOptions navigationOptionsFast = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle2 }, Timeout = 8000 };
+        private readonly NavigationOptions navigationOptionsDefault = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 6000 };
+        private readonly NavigationOptions navigationOptionsFast = new() { WaitUntil = new WaitUntilNavigation[] { WaitUntilNavigation.Networkidle2 }, Timeout = 4500 };
 
         public PuppeteerPageFetcher() { }
 
@@ -63,6 +63,7 @@ namespace TMOScrapper.Core.PageFetcher
                 await page.GoToAsync(url, navigationOptionsFast);
             }
             catch (TimeoutException) { }
+            catch (NavigationException) { }
 
             return lastResponse.Status switch
             {
