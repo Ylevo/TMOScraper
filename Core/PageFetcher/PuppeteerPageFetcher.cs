@@ -19,7 +19,7 @@ namespace TMOScrapper.Core.PageFetcher
 
         public static async Task InitializePuppeteer()
         {
-            var browserFetcher = new BrowserFetcher();
+            var browserFetcher = new BrowserFetcher(new BrowserFetcherOptions() { Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TMOScrapper") });
             int downloadProgress = -1;
             DateTime downloadTimestamp = DateTime.Now;
 
@@ -35,10 +35,10 @@ namespace TMOScrapper.Core.PageFetcher
 
             Log.Information("Downloading Puppeteer.");
             downloadTimestamp = DateTime.Now;
-            await browserFetcher.DownloadAsync();
+            var installedBrowser = await browserFetcher.DownloadAsync();
             Log.Information("Done downloading Puppeteer.");
             var extra = new PuppeteerExtra().Use(new StealthPlugin());
-            browser = await extra.LaunchAsync(new LaunchOptions { Headless = true });
+            browser = await extra.LaunchAsync(new LaunchOptions { Headless = true, ExecutablePath = installedBrowser.GetExecutablePath() });
         }
 
         public async Task<string> GetPage(string url, CancellationToken token, PageType type = PageType.Default)
