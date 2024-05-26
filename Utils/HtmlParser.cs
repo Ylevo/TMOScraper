@@ -26,12 +26,12 @@ namespace TMOScrapper.Utils
 
         public static string ParseMangoTitleFromMangoPage(HtmlDocument doc)
         {
-            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//div[@id='app']//h2").InnerText);
+            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//div[@id='app']//h2").InnerText).Replace(' ', '-');
         }
 
         public static string ParseMangoTitleFromChapterPage(HtmlDocument doc)
         {
-            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//div[@id='app']//h1").InnerText);
+            return RemoveForbbidenPathCharacters(doc.DocumentNode.SelectSingleNode("//div[@id='app']//h1").InnerText).Replace(' ', '-');
         }
 
         public static string ParseChapterNumberFromChapterPage(HtmlDocument doc)
@@ -119,7 +119,7 @@ namespace TMOScrapper.Utils
         public static string RemoveForbbidenPathCharacters(string filename)
         {
             // Split the string using forbidden characters to remove them, join them with a space as delimiter, truncate to 40, trim and remove excessive spaces
-            return Regex.Replace(string.Join(" ", WebUtility.HtmlDecode(filename).Split(forbiddenPathCharacters)).Truncate(40).Trim(new char[] { ' ', '.' }), @"\s+", "-");
+            return Regex.Replace(string.Join(" ", WebUtility.HtmlDecode(filename).Split(forbiddenPathCharacters)).Truncate(40).Trim(new char[] { ' ', '.' }), @"\s+", " ");
         }
     }
 
