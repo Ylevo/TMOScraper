@@ -10,7 +10,12 @@
     <StartupObject>TMOScrapper.Program</StartupObject>
 	<PublishSingleFile>true</PublishSingleFile>
 	<SignAssembly>True</SignAssembly>
+	<AssemblyOriginatorKeyFile>sgKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="sgKey.snk" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="HtmlAgilityPack" Version="1.11.61" />
