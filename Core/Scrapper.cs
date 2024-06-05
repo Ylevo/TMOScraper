@@ -68,7 +68,7 @@ namespace TMOScrapper.Core
                 return (ScrappingResult.PageFetchingFailure, null);
             }
 
-            List<string>? scanGroups = HtmlParser.ParseScanGroups(doc);
+            List<string>? scanGroups = HtmlQueries.GetScanGroups(doc);
 
             if (scanGroups == null || scanGroups.Count == 0)
             {
@@ -94,10 +94,10 @@ namespace TMOScrapper.Core
                 Log.Information("Scrapping single chapter.");
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token, PageType.Chapter); }, TokenSource.Token));
 
-                chapterNumber = HtmlParser.ParseChapterNumberFromChapterPage(doc);
-                groupName = HtmlParser.ParseGroupNameFromChapterPage(doc);
-                mangoTitle = HtmlParser.ParseMangoTitleFromChapterPage(doc);
-                imgUrls = HtmlParser.ParseChapterImages(doc);
+                chapterNumber = HtmlQueries.GetChapterNumberFromChapterPage(doc);
+                groupName = HtmlQueries.GetGroupNameFromChapterPage(doc);
+                mangoTitle = HtmlQueries.GetMangoTitleFromChapterPage(doc);
+                imgUrls = HtmlQueries.GetChapterImages(doc);
 
                 if (Settings.Default.SubFolder)
                 {
@@ -163,11 +163,11 @@ namespace TMOScrapper.Core
                 }
 
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
-                mangoTitle = HtmlParser.ParseMangoTitleFromMangoPage(doc);
+                mangoTitle = HtmlQueries.GetMangoTitleFromMangoPage(doc);
 
                 Log.Information($"Scrapping chapters of \"{mangoTitle}\"");
 
-                SortedDictionary<string, (string groupName, string chapterLink)[]> chapters = isOneShot ? HtmlParser.ParseOneShotLinks(doc) : HtmlParser.ParseChaptersLinks(doc);
+                SortedDictionary<string, (string groupName, string chapterLink)[]> chapters = isOneShot ? HtmlQueries.GetOneShotLinks(doc) : HtmlQueries.GetChaptersLinks(doc);
 
                 if (chapterRange.skipChapters && !isOneShot)
                 {
@@ -208,7 +208,7 @@ namespace TMOScrapper.Core
                             }
 
                             doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(chapterLink, token, PageType.Chapter); }, TokenSource.Token));
-                            imgUrls = HtmlParser.ParseChapterImages(doc);
+                            imgUrls = HtmlQueries.GetChapterImages(doc);
                             Directory.CreateDirectory(currentFolder);
 
                             Log.Information($"Downloading chapter {chapterNumber} by \"{groupName}\"");
@@ -272,9 +272,9 @@ namespace TMOScrapper.Core
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
                 string[] groupName = new string[]
                 {
-                    HtmlParser.ParseGroupName(doc)
+                    HtmlQueries.GetGroupName(doc)
                 };
-                var mangos = HtmlParser.ParseGroupMangos(doc);
+                var mangos = HtmlQueries.GetGroupMangos(doc);
                 Log.Information($"Scrapping chapters by \"{groupName[0]}\"");
 
                 foreach (string mangoUrl in mangos)

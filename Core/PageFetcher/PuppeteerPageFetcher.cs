@@ -1,6 +1,4 @@
-﻿using PuppeteerExtraSharp;
-using PuppeteerExtraSharp.Plugins.ExtraStealth;
-using PuppeteerSharp;
+﻿using PuppeteerSharp;
 using Serilog;
 using System.Net;
 using System.Text.RegularExpressions;
@@ -22,7 +20,6 @@ namespace TMOScrapper.Core.PageFetcher
             var browserFetcher = new BrowserFetcher(new BrowserFetcherOptions() { Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TMOScrapper") });
             int downloadProgress = -1;
             DateTime downloadTimestamp = DateTime.Now;
-
             browserFetcher.DownloadProgressChanged += delegate (object sender, DownloadProgressChangedEventArgs e)
             {
                 if (e.ProgressPercentage != downloadProgress && (DateTime.Now - downloadTimestamp).TotalSeconds > 2)
@@ -37,8 +34,7 @@ namespace TMOScrapper.Core.PageFetcher
             downloadTimestamp = DateTime.Now;
             var installedBrowser = await browserFetcher.DownloadAsync();
             Log.Information("Done downloading Puppeteer.");
-            var extra = new PuppeteerExtra().Use(new StealthPlugin());
-            browser = await extra.LaunchAsync(new LaunchOptions { Headless = true, ExecutablePath = installedBrowser.GetExecutablePath() });
+            browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true, ExecutablePath = installedBrowser.GetExecutablePath() });
         }
 
         public async Task<string> GetPage(string url, CancellationToken token, PageType type = PageType.Default)

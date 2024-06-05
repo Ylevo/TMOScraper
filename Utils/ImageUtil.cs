@@ -82,7 +82,7 @@ namespace TMOScrapper.Utils
                             MagickGeometry size = new(0, sizeOfSlice * i, newSlice.Width, sizeOfSlice);
                             newSlice.Crop(size);
                             newSlice.RePage();
-                            await newSlice.WriteAsync(AppendToFileName(file, "-" + $"{i + 1}".PadLeft(3, '0')), token).ConfigureAwait(false);
+                            await newSlice.WriteAsync(AppendToFileName(file, $"-{i + 1:D3}"), token).ConfigureAwait(false);
                         }
 
                         File.Delete(file);

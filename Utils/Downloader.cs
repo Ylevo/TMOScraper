@@ -31,9 +31,9 @@ namespace TMOScrapper.Utils
         {
             token.ThrowIfCancellationRequested();
             using var s = await client.GetStreamAsync(uri, token);
-            using var fs = new FileStream(path, FileMode.CreateNew);
-            Log.Verbose($"Downloading file {filename} ...");
+            using var fs = new FileStream(path, FileMode.Create);
             await s.CopyToAsync(fs, token);
+            Log.Verbose($"Downloaded file {filename}.");
         }
     }
 }
