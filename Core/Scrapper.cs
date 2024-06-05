@@ -91,7 +91,7 @@ namespace TMOScrapper.Core
 
             try
             {
-                Log.Information("Scrapping single chapter.");
+                Log.Information("Started single chapter scrapping.");
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token, PageType.Chapter); }, TokenSource.Token));
 
                 chapterNumber = HtmlQueries.GetChapterNumberFromChapterPage(doc);
@@ -157,10 +157,8 @@ namespace TMOScrapper.Core
 
             try
             {
-                if (groups == null)
-                {
-                    return ScrappingResult.NoGroupSelected;
-                }
+                if (!groupScrapping) { Log.Information($"Started mango scrapping."); }
+                if (groups == null){ return ScrappingResult.NoGroupSelected; }
 
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
                 mangoTitle = HtmlQueries.GetMangoTitleFromMangoPage(doc);
@@ -267,6 +265,7 @@ namespace TMOScrapper.Core
             List<string> notFoundMangos = new();
             try
             {
+                Log.Information($"Started group scrapping.");
                 skipMango = toSkipMango > skipMango ? toSkipMango : skipMango;
                 toSkipMango = skipMango;
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
