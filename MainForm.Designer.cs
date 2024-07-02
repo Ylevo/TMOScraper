@@ -189,7 +189,7 @@
             // 
             numeric_chaptersRangeFrom.DecimalPlaces = 2;
             numeric_chaptersRangeFrom.Location = new Point(135, 120);
-            numeric_chaptersRangeFrom.Maximum = new decimal(new int[] { 998, 0, 0, 0 });
+            numeric_chaptersRangeFrom.Maximum = new decimal(new int[] { 9999, 0, 0, 0 });
             numeric_chaptersRangeFrom.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numeric_chaptersRangeFrom.Name = "numeric_chaptersRangeFrom";
             numeric_chaptersRangeFrom.Size = new Size(52, 23);
@@ -209,7 +209,7 @@
             // 
             numeric_chaptersRangeTo.DecimalPlaces = 2;
             numeric_chaptersRangeTo.Location = new Point(217, 120);
-            numeric_chaptersRangeTo.Maximum = new decimal(new int[] { 999, 0, 0, 0 });
+            numeric_chaptersRangeTo.Maximum = new decimal(new int[] { 9999, 0, 0, 0 });
             numeric_chaptersRangeTo.Minimum = new decimal(new int[] { 2, 0, 0, 0 });
             numeric_chaptersRangeTo.Name = "numeric_chaptersRangeTo";
             numeric_chaptersRangeTo.Size = new Size(52, 23);
