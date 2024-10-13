@@ -1,7 +1,7 @@
 ﻿using Serilog;
-using TMOScrapper.Properties;
+using TMOScraper.Properties;
 
-namespace TMOScrapper.Utils
+namespace TMOScraper.Utils
 {
     public static class Downloader
     {
@@ -30,10 +30,20 @@ namespace TMOScrapper.Utils
         private static async Task DownloadFile(Uri uri, string path, string filename, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
-            using var s = await client.GetStreamAsync(uri, token);
-            using var fs = new FileStream(path, FileMode.Create);
-            await s.CopyToAsync(fs, token);
-            Log.Verbose($"Downloaded file {filename}.");
+            using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseContentRead, token);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                using var fileStream = new FileStream(path, FileMode.Create);
+                await responseStream.CopyToAsync(fileStream, token);
+                Log.Verbose($"Downloaded file {filename}.");
+            }
+            else
+            {
+                Log.Error($"Failed to download {filename}. Status code : {response.StatusCode}");
+            }
+            
         }
     }
 }

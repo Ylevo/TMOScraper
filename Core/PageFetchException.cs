@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace TMOScrapper.Core
+namespace TMOScraper.Core
 {
     public enum PageFetchExceptionResult { Failure, Banned, NotFound, RateLimited }
 

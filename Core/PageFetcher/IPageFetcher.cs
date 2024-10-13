@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TMOScrapper.Core.PageFetcher
+namespace TMOScraper.Core.PageFetcher
 {
     public enum PageType { Default, Chapter }
     public interface IPageFetcher

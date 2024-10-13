@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TMOScrapper", "TMOScrapper.csproj", "{A8D93B59-A06B-4EA4-BC42-9BEA90E7AB23}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TMOScraper", "TMOScraper.csproj", "{A8D93B59-A06B-4EA4-BC42-9BEA90E7AB23}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TMOScrapperTests", "..\TMOScrapperTests\TMOScrapperTests.csproj", "{1F5051E1-A5B9-4BF4-9490-CC8A3579189A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TMOScraperTests", "..\TMOScrapperTests\TMOScraperTests.csproj", "{1F5051E1-A5B9-4BF4-9490-CC8A3579189A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

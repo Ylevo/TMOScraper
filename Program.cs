@@ -1,12 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using TMOScrapper.Core;
+using TMOScraper.Core;
 using Polly.Extensions;
 using Microsoft.Extensions.Logging;
-using TMOScrapper.Utils;
-using TMOScrapper.Properties;
+using TMOScraper.Utils;
+using TMOScraper.Properties;
 
-namespace TMOScrapper
+namespace TMOScraper
 {
     internal static class Program
     {
@@ -37,8 +37,8 @@ namespace TMOScrapper
         private static void ConfigureServices(ServiceCollection services)
         {
             services.AddScoped<MainForm>();
-            services.AddTransient<ScrapperHandler>();
-            services.AddTransient<Scrapper>();
+            services.AddTransient<ScraperHandler>();
+            services.AddTransient<Scraper>();
             services.AddTransient<HtmlAgilityPack.HtmlDocument>();
             services.AddTransient<CancellationTokenSource>();
         }

@@ -1,11 +1,11 @@
 ﻿using HtmlAgilityPack;
 using System.Net;
 using System.Text.RegularExpressions;
-using TMOScrapper.Properties;
+using TMOScraper.Properties;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using Serilog;
 
-namespace TMOScrapper.Core.PageFetcher
+namespace TMOScraper.Core.PageFetcher
 {
     public class HtmlAgiPageFetcher : IPageFetcher
     {
@@ -34,8 +34,16 @@ namespace TMOScrapper.Core.PageFetcher
 
         private async Task<string> GetDefault(string url, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
             // LoadFromWebAsync has terrible implementation and I cba to modify the lib
-            document = await Task.Run(() => webClient.Load(url), token);
+            try
+            {
+                document = await Task.Run(() => webClient.Load(url), token);
+            }
+            catch (WebException)
+            {
+                throw new PageFetchFailureException(HttpStatusCode.RequestTimeout);
+            }
 
             token.ThrowIfCancellationRequested();
 
@@ -55,7 +63,14 @@ namespace TMOScrapper.Core.PageFetcher
 
             token.ThrowIfCancellationRequested();
 
-            document = await Task.Run(() => webClient.Load(url), token);
+            try
+            {
+                document = await Task.Run(() => webClient.Load(url), token);
+            }
+            catch (WebException)
+            {
+                throw new PageFetchFailureException(HttpStatusCode.RequestTimeout);
+            }
 
             token.ThrowIfCancellationRequested();
 

@@ -2,9 +2,9 @@
 using Serilog;
 using System.Net;
 using System.Text.RegularExpressions;
-using TMOScrapper.Properties;
+using TMOScraper.Properties;
 
-namespace TMOScrapper.Core.PageFetcher
+namespace TMOScraper.Core.PageFetcher
 {
     public class PuppeteerPageFetcher : IPageFetcher
     {
@@ -17,21 +17,9 @@ namespace TMOScrapper.Core.PageFetcher
 
         public static async Task InitializePuppeteer()
         {
-            var browserFetcher = new BrowserFetcher(new BrowserFetcherOptions() { Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TMOScrapper") });
-            int downloadProgress = -1;
-            DateTime downloadTimestamp = DateTime.Now;
-            browserFetcher.DownloadProgressChanged += delegate (object sender, DownloadProgressChangedEventArgs e)
-            {
-                if (e.ProgressPercentage != downloadProgress && (DateTime.Now - downloadTimestamp).TotalSeconds > 2)
-                {
-                    downloadProgress = e.ProgressPercentage;
-                    downloadTimestamp = DateTime.Now;
-                    Log.Information($"Progress : {downloadProgress}/100%");
-                }
-            };
+            var browserFetcher = new BrowserFetcher(new BrowserFetcherOptions() { Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TMOScraper") });
 
-            Log.Information("Downloading Puppeteer.");
-            downloadTimestamp = DateTime.Now;
+            Log.Information("Downloading Puppeteer ...");
             var installedBrowser = await browserFetcher.DownloadAsync();
             Log.Information("Done downloading Puppeteer.");
             browser = await Puppeteer.LaunchAsync(new LaunchOptions { Headless = true, ExecutablePath = installedBrowser.GetExecutablePath() });
@@ -60,7 +48,6 @@ namespace TMOScrapper.Core.PageFetcher
             }
             catch (TimeoutException) { }
             catch (NavigationException) { }
-            
 
             return lastResponse.Status switch
             {

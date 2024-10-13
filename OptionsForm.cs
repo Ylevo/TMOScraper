@@ -1,6 +1,6 @@
-﻿using TMOScrapper.Properties;
+﻿using TMOScraper.Properties;
 
-namespace TMOScrapper
+namespace TMOScraper
 {
     public partial class OptionsForm : Form
     {
@@ -23,7 +23,15 @@ namespace TMOScrapper
 
         private void BtnSave_Click(object sender, EventArgs e)
         {
-            Settings.Default.Domain = txtBox_domain.Text;
+            try
+            {
+                Settings.Default.Domain = new UriBuilder(txtBox_domain.Text) { Scheme = Uri.UriSchemeHttps, Port = -1 }.Uri.ToString();
+            }
+            catch 
+            {
+                MessageBox.Show("URL entered for the TMO domain is invalid.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+                return;
+            }
             Settings.Default.ChapterDelay = (int)numeric_chapterDelay.Value;
             Settings.Default.MangoDelay = (int)numeric_mangoDelay.Value;
             Settings.Default.RetryDelay = (int)numeric_retryDelay.Value;

@@ -122,9 +122,9 @@
   </metadata>
   <data name="txtBox_mangoUrl.ToolTip" xml:space="preserve">
     <value>Accepted URLs :
-https://visortmo.com/library/manga/xxxx/xxxxxxxx ---&gt; Mango scrapping (Manga/Manhua/Manwha/Doujinshi/Oneshot/Novel/Oel)
-https://visortmo.com/groups/xxxx/xxxxxx/proyects ---&gt; Group scrapping
-https://visortmo.com/viewer/xxxxxxxxxxxx/cascade ---&gt; Single chapter scrapping</value>
+https://visortmo.com/library/manga/xxxx/xxxxxxxx ---&gt; Mango scraping (Manga/Manhua/Manwha/Doujinshi/Oneshot/Novel/Oel)
+https://visortmo.com/groups/xxxx/xxxxxx/proyects ---&gt; Group scraping
+https://visortmo.com/viewer/xxxxxxxxxxxx/cascade ---&gt; Single chapter scraping</value>
   </data>
   <metadata name="setFolderDialog.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>

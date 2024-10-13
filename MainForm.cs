@@ -1,15 +1,15 @@
 using System.Windows.Forms.Integration;
-using TMOScrapper.Core;
+using TMOScraper.Core;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows.Controls;
 using System.Windows;
 using Brushes = System.Windows.Media.Brushes;
 using Serilog;
 using Serilog.Sinks.RichTextBox.Themes;
-using TMOScrapper.Core.PageFetcher;
-using TMOScrapper.Properties;
+using TMOScraper.Core.PageFetcher;
+using TMOScraper.Properties;
 
-namespace TMOScrapper
+namespace TMOScraper
 {
     public partial class MainForm : Form
     {
@@ -88,9 +88,9 @@ namespace TMOScrapper
             Log.Logger = logConf.CreateLogger();
         }
 
-        private ScrapperHandler GetNewScrapper()
+        private ScraperHandler GetNewScrapper()
         {
-            var scrapper = serviceProvider.GetRequiredService<ScrapperHandler>();
+            var scrapper = serviceProvider.GetRequiredService<ScraperHandler>();
             cancellationToken = scrapper.GetTokenSource();
 
             return scrapper;

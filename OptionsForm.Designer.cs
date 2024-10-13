@@ -1,4 +1,4 @@
-﻿namespace TMOScrapper
+﻿namespace TMOScraper
 {
     partial class OptionsForm
     {
@@ -159,7 +159,7 @@
             numeric_chapterDelay.Name = "numeric_chapterDelay";
             numeric_chapterDelay.Size = new Size(80, 23);
             numeric_chapterDelay.TabIndex = 10;
-            toolTip_optionsForm.SetToolTip(numeric_chapterDelay, "Time in milliseconds to wait before scrapping the next chapter.");
+            toolTip_optionsForm.SetToolTip(numeric_chapterDelay, "Time in milliseconds to wait before scraping the next chapter.");
             // 
             // numeric_retryDelay
             // 
@@ -184,7 +184,7 @@
             btn_save.Location = new Point(280, 174);
             btn_save.Name = "btn_save";
             btn_save.Size = new Size(75, 23);
-            btn_save.TabIndex = 13;
+            btn_save.TabIndex = 0;
             btn_save.Text = "Save";
             btn_save.UseVisualStyleBackColor = true;
             btn_save.Click += BtnSave_Click;
@@ -227,7 +227,7 @@
             numeric_mangoDelay.Name = "numeric_mangoDelay";
             numeric_mangoDelay.Size = new Size(80, 23);
             numeric_mangoDelay.TabIndex = 17;
-            toolTip_optionsForm.SetToolTip(numeric_mangoDelay, "Time in milliseconds to wait before scrapping the next mango.");
+            toolTip_optionsForm.SetToolTip(numeric_mangoDelay, "Time in milliseconds to wait before scraping the next mango.");
             // 
             // toolTip_optionsForm
             // 
@@ -271,7 +271,7 @@
             Controls.Add(txtBox_domain);
             Controls.Add(lbl_domain);
             Name = "OptionsForm";
-            Text = "OptionsForm";
+            Text = "Options";
             ((System.ComponentModel.ISupportInitialize)numeric_chapterDelay).EndInit();
             ((System.ComponentModel.ISupportInitialize)numeric_retryDelay).EndInit();
             ((System.ComponentModel.ISupportInitialize)numeric_maxRetries).EndInit();

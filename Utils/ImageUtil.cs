@@ -1,8 +1,8 @@
 ﻿using ImageMagick;
 using Serilog;
-using TMOScrapper.Properties;
+using TMOScraper.Properties;
 
-namespace TMOScrapper.Utils
+namespace TMOScraper.Utils
 {
     public static class ImageUtil
     {
@@ -67,12 +67,12 @@ namespace TMOScrapper.Utils
                     token.ThrowIfCancellationRequested();
 
                     using MagickImage originalImg = new(file);
-                    int originalImgHeight = originalImg.Height;
+                    decimal originalImgHeight = originalImg.Height;
 
                     if (originalImgHeight >= 10000)
                     {
-                        int numberOfSlices = (int)Math.Ceiling((decimal)originalImgHeight / 5000);
-                        int sizeOfSlice = (int)Math.Ceiling((decimal)originalImgHeight / numberOfSlices);
+                        int numberOfSlices = (int)Math.Ceiling(originalImgHeight / 5000);
+                        int sizeOfSlice = (int)Math.Ceiling(originalImgHeight / numberOfSlices);
 
                         Log.Verbose($"Splitting {Path.GetFileName(file)} into {numberOfSlices} parts.");
 

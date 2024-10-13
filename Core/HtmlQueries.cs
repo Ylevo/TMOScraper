@@ -3,7 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
-namespace TMOScrapper.Core
+namespace TMOScraper.Core
 {
     public static class HtmlQueries
     {
@@ -72,7 +72,7 @@ namespace TMOScrapper.Core
                 for (int x = 0; x < uploadedChaptersNodes.Count(); ++x)
                 {
                     uploadedChapterLink = uploadedChaptersNodes.ElementAt(x).Descendants("a").Last().Attributes["href"].Value;
-                    groupName = string.Join('+', uploadedChaptersNodes.ElementAt(x).Descendants("span").First().InnerText.Split(',', StringSplitOptions.TrimEntries).Select(g => RemoveForbbidenPathCharacters(g)));
+                    groupName = string.Join('+', uploadedChaptersNodes.ElementAt(x).Descendants("span").First().InnerText.Split(',', StringSplitOptions.TrimEntries).Select(g => RemoveForbbidenPathCharacters(g)).Take(5));
                     uploadedChapters[x] = (groupName, uploadedChapterLink);
                 }
 

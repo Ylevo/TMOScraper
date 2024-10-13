@@ -1,4 +1,4 @@
-﻿namespace TMOScrapper
+﻿namespace TMOScraper
 {
     partial class MainForm
     {
@@ -131,7 +131,7 @@
             chkBox_mangoSubfolder.Size = new Size(154, 19);
             chkBox_mangoSubfolder.TabIndex = 9;
             chkBox_mangoSubfolder.Text = "Create mango subfolder";
-            toolTip_mainForm.SetToolTip(chkBox_mangoSubfolder, "When checked, will create a subfolder named after each mango scrapped. \r\nDoes not create a subfolder named after the group scrapped.");
+            toolTip_mainForm.SetToolTip(chkBox_mangoSubfolder, "When checked, will create a subfolder named after each mango scraped. \r\nDoes not create a subfolder named after the group scraped.");
             chkBox_mangoSubfolder.UseVisualStyleBackColor = true;
             chkBox_mangoSubfolder.CheckedChanged += chkBox_mangoSubfolder_CheckedChanged;
             // 
@@ -224,7 +224,7 @@
             chkBox_skipMangos.Size = new Size(54, 19);
             chkBox_skipMangos.TabIndex = 21;
             chkBox_skipMangos.Text = "Skip :";
-            toolTip_mainForm.SetToolTip(chkBox_skipMangos, "When checked, will skip that many mango when group scrapping.");
+            toolTip_mainForm.SetToolTip(chkBox_skipMangos, "When checked, will skip that many mango when group scraping.");
             chkBox_skipMangos.UseVisualStyleBackColor = true;
             // 
             // numeric_skipMangos
@@ -307,7 +307,7 @@
             MainMenuStrip = menuStrip1;
             MaximizeBox = false;
             Name = "MainForm";
-            Text = "TMO Scrapper";
+            Text = "TMO Scraper";
             FormClosing += MainForm_FormClosing;
             Shown += MainForm_Shown;
             ((System.ComponentModel.ISupportInitialize)numeric_chaptersRangeFrom).EndInit();

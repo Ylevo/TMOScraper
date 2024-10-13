@@ -1,30 +1,30 @@
 ﻿using Serilog;
-using TMOScrapper.Core.PageFetcher;
-using TMOScrapper.Properties;
+using TMOScraper.Core.PageFetcher;
+using TMOScraper.Properties;
 
-namespace TMOScrapper.Core
+namespace TMOScraper.Core
 {
     public enum PageFetcherImplementation { HtmlAgi, Puppeteer };
-    public enum ScrappingResult { Success, PageFetchingFailure, NoGroupSelected, PageNotFound };
+    public enum ScrapingResult { Success, PageFetchingFailure, NoGroupSelected, PageNotFound };
 
-    internal class ScrapperHandler
+    internal class ScraperHandler
     {
-        private readonly Scrapper scrapper;
+        private readonly Scraper scraper;
         private PageFetcherImplementation currentImplementation;
         private readonly Dictionary<PageFetcherImplementation, Func<IPageFetcher>> pageFetcherDict = new (){
             { PageFetcherImplementation.HtmlAgi, () => new HtmlAgiPageFetcher() },
             { PageFetcherImplementation.Puppeteer, () => new PuppeteerPageFetcher() }
         };
-        public ScrapperHandler(Scrapper scrapper)
+        public ScraperHandler(Scraper scraper)
         {
-            this.scrapper = scrapper;
+            this.scraper = scraper;
             currentImplementation = Settings.Default.AlwaysUsePuppeteer ? PageFetcherImplementation.Puppeteer : PageFetcherImplementation.HtmlAgi;
-            scrapper.PageFetcher = pageFetcherDict[currentImplementation]();
+            scraper.PageFetcher = pageFetcherDict[currentImplementation]();
         }
 
         public CancellationTokenSource GetTokenSource()
         {
-            return scrapper.TokenSource;
+            return scraper.TokenSource;
         }
 
         public async Task ScrapChapters(
@@ -35,20 +35,19 @@ namespace TMOScrapper.Core
         {
             try
             {
-                ScrappingResult result = await scrapper.ScrapChapters(url, groups, chapterRange, skipMango);
+                ScrapingResult result = await scraper.ScrapChapters(url, groups, chapterRange, skipMango);
 
-                if (result == ScrappingResult.PageFetchingFailure && currentImplementation != PageFetcherImplementation.Puppeteer)
+                if (TryWithPuppeteer(result))
                 {
-                    SwitchToPuppeteer();
                     await ScrapChapters(url, groups, chapterRange, skipMango);
                     return;
                 }
 
-                LogScrappingResult(result);
+                LogScrapingResult(result);
             }
             catch (OperationCanceledException)
             {
-                Log.Information("Aborted scrapping.");
+                Log.Information("Aborted scraping.");
             }
             catch (Exception ex)
             {
@@ -63,20 +62,19 @@ namespace TMOScrapper.Core
 
             try
             {
-                var tupleResult = await scrapper.ScrapScanGroups(url);
+                var tupleResult = await scraper.ScrapScanGroups(url);
 
-                if (tupleResult.result == ScrappingResult.PageFetchingFailure && currentImplementation != PageFetcherImplementation.Puppeteer)
+                if (TryWithPuppeteer(tupleResult.result))
                 {
-                    SwitchToPuppeteer();
                     return await ScrapScanGroups(url);
                 }
 
                 groups = tupleResult.groups;
-                LogScrappingResult(tupleResult.result);
+                LogScrapingResult(tupleResult.result);
             }
             catch (OperationCanceledException)
             {
-                Log.Information("Aborted scrapping.");
+                Log.Information("Aborted scraping.");
             }
             catch (Exception ex)
             {
@@ -86,28 +84,36 @@ namespace TMOScrapper.Core
 
             return groups;
         }
-        private void SwitchToPuppeteer()
+
+        private bool TryWithPuppeteer(ScrapingResult result)
         {
-            Log.Information("Switching to puppeteer implementation.");
-            currentImplementation = PageFetcherImplementation.Puppeteer;
-            scrapper.PageFetcher = pageFetcherDict[currentImplementation]();
+            bool failed = result == ScrapingResult.PageFetchingFailure && currentImplementation != PageFetcherImplementation.Puppeteer;
+
+            if (failed)
+            {
+                Log.Information("Switching to puppeteer implementation.");
+                currentImplementation = PageFetcherImplementation.Puppeteer;
+                scraper.PageFetcher = pageFetcherDict[currentImplementation]();
+            }
+
+            return failed;
         }
 
-        private void LogScrappingResult(ScrappingResult result)
+        private void LogScrapingResult(ScrapingResult result)
         {
             switch(result)
             {
-                case ScrappingResult.Success:
-                    Log.Information("Scrapping ended successfully.");
+                case ScrapingResult.Success:
+                    Log.Information("Scraping ended successfully.");
                     break;
-                case ScrappingResult.PageNotFound:
-                    Log.Error("Scrapping failed : wrong URL or page not found.");
+                case ScrapingResult.PageNotFound:
+                    Log.Error("Scraping failed : wrong URL or page not found.");
                     break;
-                case ScrappingResult.PageFetchingFailure:
-                    Log.Error("Scrapping failed : couldn't fetch the page(s). Current implementation might be broken or you're banned/ratelimited.");
+                case ScrapingResult.PageFetchingFailure:
+                    Log.Error("Scraping failed : couldn't fetch the page(s). Current implementation might be broken or you're banned/ratelimited.");
                     break;
-                case ScrappingResult.NoGroupSelected:
-                    Log.Error("Scrapping failed : no group selected.");
+                case ScrapingResult.NoGroupSelected:
+                    Log.Error("Scraping failed : no group selected.");
                     break;
             };
         }

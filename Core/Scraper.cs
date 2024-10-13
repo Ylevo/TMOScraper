@@ -1,14 +1,14 @@
 ﻿using Polly;
 using Serilog;
 using System.Text.RegularExpressions;
-using TMOScrapper.Core.PageFetcher;
-using TMOScrapper.Properties;
-using TMOScrapper.Utils;
+using TMOScraper.Core.PageFetcher;
+using TMOScraper.Properties;
+using TMOScraper.Utils;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
-namespace TMOScrapper.Core
+namespace TMOScraper.Core
 {
-    public class Scrapper
+    public class Scraper
     {
         public IPageFetcher? PageFetcher { get; set; } = null;
         public CancellationTokenSource? TokenSource { get; init; }
@@ -20,7 +20,7 @@ namespace TMOScrapper.Core
         private const string FolderNameTemplate = "{0} [{1}] - {2} [{3}]";
 
 
-        public Scrapper(CancellationTokenSource tokenSource, HtmlDocument document) 
+        public Scraper(CancellationTokenSource tokenSource, HtmlDocument document) 
         {
             TokenSource = tokenSource;
             doc = document;
@@ -28,7 +28,7 @@ namespace TMOScrapper.Core
             retryPipeline = SetRetryPipeline();
         }
 
-        public async Task<ScrappingResult> ScrapChapters(
+        public async Task<ScrapingResult> ScrapChapters(
             string url, 
             string[]? groups, 
             (bool skipChapters, decimal from, decimal to) chapterRange,
@@ -46,13 +46,13 @@ namespace TMOScrapper.Core
                 case "Group":
                     return await ScrapGroupChapters(url, skipMango, chapterRange);
                 default:
-                    return ScrappingResult.PageNotFound;
+                    return ScrapingResult.PageNotFound;
             }
         }
 
-        public async Task<(ScrappingResult result, List<string>? groups)> ScrapScanGroups(string url)
+        public async Task<(ScrapingResult result, List<string>? groups)> ScrapScanGroups(string url)
         {
-            Log.Information("Scrapping scannies.");
+            Log.Information("Scraping scannies.");
 
             try
             {
@@ -60,27 +60,27 @@ namespace TMOScrapper.Core
             }
             catch(UriFormatException)
             {
-                return (ScrappingResult.PageNotFound, null);
+                return (ScrapingResult.PageNotFound, null);
             }
             catch(PageFetchException ex)
             {
                 Log.Error(ex.Message);
-                return (ScrappingResult.PageFetchingFailure, null);
+                return (ScrapingResult.PageFetchingFailure, null);
             }
 
             List<string>? scanGroups = HtmlQueries.GetScanGroups(doc);
 
             if (scanGroups == null || scanGroups.Count == 0)
             {
-                return (ScrappingResult.PageNotFound, null);
+                return (ScrapingResult.PageNotFound, null);
             }
 
             scanGroups.Sort();
 
-            return (ScrappingResult.Success, scanGroups);
+            return (ScrapingResult.Success, scanGroups);
         }
 
-        public async Task<ScrappingResult> ScrapSingleChapter(string url)
+        public async Task<ScrapingResult> ScrapSingleChapter(string url)
         {
             string mangoTitle,
                 chapterNumber,
@@ -91,7 +91,7 @@ namespace TMOScrapper.Core
 
             try
             {
-                Log.Information("Started single chapter scrapping.");
+                Log.Information("Started single chapter scraping.");
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token, PageType.Chapter); }, TokenSource.Token));
 
                 chapterNumber = HtmlQueries.GetChapterNumberFromChapterPage(doc);
@@ -129,12 +129,12 @@ namespace TMOScrapper.Core
                         await ImageUtil.SplitImages(currentFolder, TokenSource.Token);
                     }
                 }
-                return ScrappingResult.Success;
+                return ScrapingResult.Success;
             }
             catch (PageFetchException ex)
             {
                 Log.Error(ex.Message);
-                return ScrappingResult.PageFetchingFailure;
+                return ScrapingResult.PageFetchingFailure;
             }
             finally
             {
@@ -145,7 +145,7 @@ namespace TMOScrapper.Core
             }
         }
 
-        public async Task<ScrappingResult> ScrapBulkChapters(string url, string[]? groups, (bool skipChapters, decimal from, decimal to) chapterRange, bool groupScrapping = false)
+        public async Task<ScrapingResult> ScrapBulkChapters(string url, string[]? groups, (bool skipChapters, decimal from, decimal to) chapterRange, bool groupScraping = false)
         {
             string mangoTitle = "",
                chapterNumber,
@@ -157,13 +157,13 @@ namespace TMOScrapper.Core
 
             try
             {
-                if (!groupScrapping) { Log.Information($"Started mango scrapping."); }
-                if (groups == null){ return ScrappingResult.NoGroupSelected; }
+                if (!groupScraping) { Log.Information($"Started mango scraping."); }
+                if (groups == null){ return ScrapingResult.NoGroupSelected; }
 
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
                 mangoTitle = HtmlQueries.GetMangoTitleFromMangoPage(doc);
 
-                Log.Information($"Scrapping chapters of \"{mangoTitle}\"");
+                Log.Information($"Scraping chapters of \"{mangoTitle}\"");
 
                 SortedDictionary<string, (string groupName, string chapterLink)[]> chapters = isOneShot ? HtmlQueries.GetOneShotLinks(doc) : HtmlQueries.GetChaptersLinks(doc);
 
@@ -187,7 +187,7 @@ namespace TMOScrapper.Core
 
                     actuallyDidSomething = false;
                     chapterNumber = isOneShot ? "000" : "c" + chapter.Key;
-                    Log.Information($"Scrapping chapter {chapterNumber}");
+                    Log.Information($"Scraping chapter {chapterNumber}");
 
                     foreach (var (groupName, chapterLink) in chapter.Value)
                     {
@@ -195,7 +195,7 @@ namespace TMOScrapper.Core
 
                         TokenSource.Token.ThrowIfCancellationRequested();
 
-                        if (groups.Contains(groupName) || (groupScrapping && groups.Any(groupName.Contains)))
+                        if (groups.Contains(groupName) || (groupScraping && groups.Any(groupName.Contains)))
                         {
                             currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, groupName));
 
@@ -236,19 +236,19 @@ namespace TMOScrapper.Core
                     }
                 }
 
-                Log.Information($"Done scrapping chapters of \"{mangoTitle}\"");
+                Log.Information($"Done scraping chapters of \"{mangoTitle}\"");
 
-                return ScrappingResult.Success;
+                return ScrapingResult.Success;
             }
-            catch (PageFetchException ex) when (ex is PageFetchNotFoundException && groupScrapping)
+            catch (PageFetchException ex) when (ex is PageFetchNotFoundException && groupScraping)
             {
                 Log.Warning(ex.Message);
-                return ScrappingResult.PageNotFound;
+                return ScrapingResult.PageNotFound;
             }
             catch (PageFetchException ex)
             {
                 Log.Error(ex.Message);
-                return ScrappingResult.PageFetchingFailure;
+                return ScrapingResult.PageFetchingFailure;
             }
             finally
             {
@@ -259,13 +259,13 @@ namespace TMOScrapper.Core
             }
         }
 
-        public async Task<ScrappingResult> ScrapGroupChapters(string url, int skipMango, (bool skipChapters, decimal from, decimal to) chapterRange)
+        public async Task<ScrapingResult> ScrapGroupChapters(string url, int skipMango, (bool skipChapters, decimal from, decimal to) chapterRange)
         {
             int skippedMangos = 0;
             List<string> notFoundMangos = new();
             try
             {
-                Log.Information($"Started group scrapping.");
+                Log.Information($"Started group scraping.");
                 skipMango = toSkipMango > skipMango ? toSkipMango : skipMango;
                 toSkipMango = skipMango;
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
@@ -274,7 +274,7 @@ namespace TMOScrapper.Core
                     HtmlQueries.GetGroupName(doc)
                 };
                 var mangos = HtmlQueries.GetGroupMangos(doc);
-                Log.Information($"Scrapping chapters by \"{groupName[0]}\"");
+                Log.Information($"Scraping chapters by \"{groupName[0]}\"");
 
                 foreach (string mangoUrl in mangos)
                 {
@@ -283,13 +283,13 @@ namespace TMOScrapper.Core
                         continue;
                     }
 
-                    ScrappingResult result = await ScrapBulkChapters(mangoUrl, groupName, chapterRange, true);
+                    ScrapingResult result = await ScrapBulkChapters(mangoUrl, groupName, chapterRange, true);
 
                     switch(result)
                     {
-                        case ScrappingResult.Success:
+                        case ScrapingResult.Success:
                             break;
-                        case ScrappingResult.PageNotFound:
+                        case ScrapingResult.PageNotFound:
                             notFoundMangos.Add(mangoUrl);
                             break;
                         default:
@@ -302,14 +302,14 @@ namespace TMOScrapper.Core
                     await Task.Delay(Settings.Default.MangoDelay);
                 }
 
-                Log.Information($"Done scrapping chapters by \"{groupName[0]}\"");
+                Log.Information($"Done scraping chapters by \"{groupName[0]}\"");
 
-                return ScrappingResult.Success;
+                return ScrapingResult.Success;
             }
             catch (PageFetchException ex)
             {
                 Log.Error(ex.Message);
-                return ScrappingResult.PageFetchingFailure;
+                return ScrapingResult.PageFetchingFailure;
             }
             finally
             {
