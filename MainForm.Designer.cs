@@ -56,7 +56,7 @@
             // btn_download
             // 
             btn_download.Enabled = false;
-            btn_download.Location = new Point(12, 247);
+            btn_download.Location = new Point(12, 311);
             btn_download.Name = "btn_download";
             btn_download.Size = new Size(119, 23);
             btn_download.TabIndex = 0;
@@ -76,8 +76,10 @@
             // txtBox_mangoUrl
             // 
             txtBox_mangoUrl.Location = new Point(95, 34);
+            txtBox_mangoUrl.Multiline = true;
             txtBox_mangoUrl.Name = "txtBox_mangoUrl";
-            txtBox_mangoUrl.Size = new Size(441, 23);
+            txtBox_mangoUrl.ScrollBars = ScrollBars.Vertical;
+            txtBox_mangoUrl.Size = new Size(441, 87);
             txtBox_mangoUrl.TabIndex = 2;
             toolTip_mainForm.SetToolTip(txtBox_mangoUrl, resources.GetString("txtBox_mangoUrl.ToolTip"));
             txtBox_mangoUrl.TextChanged += TxtBoxMangoUrl_TextChanged;
@@ -85,14 +87,14 @@
             // txtBox_setFolder
             // 
             txtBox_setFolder.Enabled = false;
-            txtBox_setFolder.Location = new Point(95, 63);
+            txtBox_setFolder.Location = new Point(95, 127);
             txtBox_setFolder.Name = "txtBox_setFolder";
             txtBox_setFolder.Size = new Size(441, 23);
             txtBox_setFolder.TabIndex = 4;
             // 
             // btn_setFolder
             // 
-            btn_setFolder.Location = new Point(13, 63);
+            btn_setFolder.Location = new Point(13, 127);
             btn_setFolder.Name = "btn_setFolder";
             btn_setFolder.Size = new Size(76, 23);
             btn_setFolder.TabIndex = 5;
@@ -103,7 +105,7 @@
             // btn_scan
             // 
             btn_scan.Enabled = false;
-            btn_scan.Location = new Point(12, 164);
+            btn_scan.Location = new Point(12, 228);
             btn_scan.Name = "btn_scan";
             btn_scan.Size = new Size(121, 23);
             btn_scan.TabIndex = 6;
@@ -114,7 +116,7 @@
             // listBox_scannies
             // 
             listBox_scannies.FormattingEnabled = true;
-            listBox_scannies.Location = new Point(139, 151);
+            listBox_scannies.Location = new Point(139, 215);
             listBox_scannies.Name = "listBox_scannies";
             listBox_scannies.Size = new Size(397, 76);
             listBox_scannies.TabIndex = 7;
@@ -126,7 +128,7 @@
             chkBox_mangoSubfolder.AutoSize = true;
             chkBox_mangoSubfolder.Checked = true;
             chkBox_mangoSubfolder.CheckState = CheckState.Checked;
-            chkBox_mangoSubfolder.Location = new Point(382, 96);
+            chkBox_mangoSubfolder.Location = new Point(382, 160);
             chkBox_mangoSubfolder.Name = "chkBox_mangoSubfolder";
             chkBox_mangoSubfolder.Size = new Size(154, 19);
             chkBox_mangoSubfolder.TabIndex = 9;
@@ -138,7 +140,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(242, 402);
+            label1.Location = new Point(242, 466);
             label1.Name = "label1";
             label1.Size = new Size(52, 15);
             label1.TabIndex = 11;
@@ -147,7 +149,7 @@
             // btn_stop
             // 
             btn_stop.Enabled = false;
-            btn_stop.Location = new Point(13, 276);
+            btn_stop.Location = new Point(13, 340);
             btn_stop.Name = "btn_stop";
             btn_stop.Size = new Size(118, 23);
             btn_stop.TabIndex = 12;
@@ -158,7 +160,7 @@
             // lbl_language
             // 
             lbl_language.AutoSize = true;
-            lbl_language.Location = new Point(12, 95);
+            lbl_language.Location = new Point(12, 159);
             lbl_language.Name = "lbl_language";
             lbl_language.Size = new Size(65, 15);
             lbl_language.TabIndex = 15;
@@ -167,7 +169,7 @@
             // cmbBox_language
             // 
             cmbBox_language.FormattingEnabled = true;
-            cmbBox_language.Location = new Point(95, 92);
+            cmbBox_language.Location = new Point(95, 156);
             cmbBox_language.Name = "cmbBox_language";
             cmbBox_language.Size = new Size(121, 23);
             cmbBox_language.TabIndex = 16;
@@ -177,7 +179,7 @@
             // chkBox_chaptersRange
             // 
             chkBox_chaptersRange.AutoSize = true;
-            chkBox_chaptersRange.Location = new Point(14, 121);
+            chkBox_chaptersRange.Location = new Point(14, 185);
             chkBox_chaptersRange.Name = "chkBox_chaptersRange";
             chkBox_chaptersRange.Size = new Size(115, 19);
             chkBox_chaptersRange.TabIndex = 17;
@@ -188,7 +190,7 @@
             // numeric_chaptersRangeFrom
             // 
             numeric_chaptersRangeFrom.DecimalPlaces = 2;
-            numeric_chaptersRangeFrom.Location = new Point(135, 120);
+            numeric_chaptersRangeFrom.Location = new Point(135, 184);
             numeric_chaptersRangeFrom.Maximum = new decimal(new int[] { 9999, 0, 0, 0 });
             numeric_chaptersRangeFrom.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numeric_chaptersRangeFrom.Name = "numeric_chaptersRangeFrom";
@@ -199,7 +201,7 @@
             // lbl_chaptersRangeTo
             // 
             lbl_chaptersRangeTo.AutoSize = true;
-            lbl_chaptersRangeTo.Location = new Point(193, 122);
+            lbl_chaptersRangeTo.Location = new Point(193, 186);
             lbl_chaptersRangeTo.Name = "lbl_chaptersRangeTo";
             lbl_chaptersRangeTo.Size = new Size(18, 15);
             lbl_chaptersRangeTo.TabIndex = 19;
@@ -208,7 +210,7 @@
             // numeric_chaptersRangeTo
             // 
             numeric_chaptersRangeTo.DecimalPlaces = 2;
-            numeric_chaptersRangeTo.Location = new Point(217, 120);
+            numeric_chaptersRangeTo.Location = new Point(217, 184);
             numeric_chaptersRangeTo.Maximum = new decimal(new int[] { 9999, 0, 0, 0 });
             numeric_chaptersRangeTo.Minimum = new decimal(new int[] { 2, 0, 0, 0 });
             numeric_chaptersRangeTo.Name = "numeric_chaptersRangeTo";
@@ -219,7 +221,7 @@
             // chkBox_skipMangos
             // 
             chkBox_skipMangos.AutoSize = true;
-            chkBox_skipMangos.Location = new Point(382, 121);
+            chkBox_skipMangos.Location = new Point(382, 185);
             chkBox_skipMangos.Name = "chkBox_skipMangos";
             chkBox_skipMangos.Size = new Size(54, 19);
             chkBox_skipMangos.TabIndex = 21;
@@ -229,7 +231,7 @@
             // 
             // numeric_skipMangos
             // 
-            numeric_skipMangos.Location = new Point(442, 120);
+            numeric_skipMangos.Location = new Point(442, 184);
             numeric_skipMangos.Maximum = new decimal(new int[] { 999, 0, 0, 0 });
             numeric_skipMangos.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numeric_skipMangos.Name = "numeric_skipMangos";
@@ -239,7 +241,7 @@
             // 
             // btn_selectAllScannies
             // 
-            btn_selectAllScannies.Location = new Point(12, 193);
+            btn_selectAllScannies.Location = new Point(12, 257);
             btn_selectAllScannies.Name = "btn_selectAllScannies";
             btn_selectAllScannies.Size = new Size(121, 23);
             btn_selectAllScannies.TabIndex = 23;
@@ -250,7 +252,7 @@
             // 
             // panel_logger
             // 
-            panel_logger.Location = new Point(139, 246);
+            panel_logger.Location = new Point(139, 310);
             panel_logger.Name = "panel_logger";
             panel_logger.Size = new Size(397, 138);
             panel_logger.TabIndex = 24;
@@ -281,7 +283,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(557, 430);
+            ClientSize = new Size(557, 492);
             Controls.Add(panel_logger);
             Controls.Add(btn_selectAllScannies);
             Controls.Add(numeric_skipMangos);

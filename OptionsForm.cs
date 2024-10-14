@@ -25,7 +25,7 @@ namespace TMOScraper
         {
             try
             {
-                Settings.Default.Domain = new UriBuilder(txtBox_domain.Text) { Scheme = Uri.UriSchemeHttps, Port = -1 }.Uri.ToString();
+                Settings.Default.Domain = new UriBuilder(txtBox_domain.Text) { Scheme = Uri.UriSchemeHttps, Port = -1 }.Uri.ToString()[..^1];
             }
             catch 
             {

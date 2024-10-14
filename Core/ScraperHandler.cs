@@ -28,22 +28,27 @@ namespace TMOScraper.Core
         }
 
         public async Task ScrapChapters(
-            string url,
+            string urls,
             string[]? groups,
             (bool skipChapters, decimal from, decimal to) chapterRange,
             int skipMango)
         {
             try
             {
-                ScrapingResult result = await scraper.ScrapChapters(url, groups, chapterRange, skipMango);
+                var urlsArray = urls.Split("\r\n");
 
-                if (TryWithPuppeteer(result))
+                foreach (string url in urlsArray)
                 {
-                    await ScrapChapters(url, groups, chapterRange, skipMango);
-                    return;
-                }
+                    ScrapingResult result = await scraper.ScrapChapters(url, groups, chapterRange, skipMango, urlsArray.Length > 1 );
 
-                LogScrapingResult(result);
+                    if (TryWithPuppeteer(result))
+                    {
+                        await ScrapChapters(url, groups, chapterRange, skipMango);
+                        return;
+                    }
+
+                    LogScrapingResult(result);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -104,7 +109,7 @@ namespace TMOScraper.Core
             switch(result)
             {
                 case ScrapingResult.Success:
-                    Log.Information("Scraping ended successfully.");
+                    Log.Information("Scraping completed successfully.");
                     break;
                 case ScrapingResult.PageNotFound:
                     Log.Error("Scraping failed : wrong URL or page not found.");

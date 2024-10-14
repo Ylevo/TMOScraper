@@ -32,15 +32,17 @@ namespace TMOScraper.Core
             string url, 
             string[]? groups, 
             (bool skipChapters, decimal from, decimal to) chapterRange,
-            int skipMango)
+            int skipMango,
+            bool allGroups)
         {
+            TokenSource.Token.ThrowIfCancellationRequested();
             toSkipMango = toSkipMango < skipMango ? skipMango : toSkipMango;
             string pattern = $@"(?<={domainName}\/)((?<Bulk>library\/(manga|manhua|manhwa|doujinshi|one_shot|novel|oel)\/)|(?<Single>view_uploads|viewer\/)|(?<Group>groups\/(.*)proyects))";
             string pageType = Regex.Match(url, pattern, RegexOptions.ExplicitCapture).Groups.Values.Where(g => g.Success && g.Name != "0").FirstOrDefault()?.Name ?? "";
             switch (pageType)
             {
                 case "Bulk":
-                    return await ScrapBulkChapters(url, groups, chapterRange);
+                    return await ScrapBulkChapters(url, groups, chapterRange, allGroups: allGroups);
                 case "Single":
                     return await ScrapSingleChapter(url);
                 case "Group":
@@ -145,7 +147,7 @@ namespace TMOScraper.Core
             }
         }
 
-        public async Task<ScrapingResult> ScrapBulkChapters(string url, string[]? groups, (bool skipChapters, decimal from, decimal to) chapterRange, bool groupScraping = false)
+        public async Task<ScrapingResult> ScrapBulkChapters(string url, string[]? groups, (bool skipChapters, decimal from, decimal to) chapterRange, bool groupScraping = false, bool allGroups = false)
         {
             string mangoTitle = "",
                chapterNumber,
@@ -158,7 +160,7 @@ namespace TMOScraper.Core
             try
             {
                 if (!groupScraping) { Log.Information($"Started mango scraping."); }
-                if (groups == null){ return ScrapingResult.NoGroupSelected; }
+                if (groups == null && !allGroups){ return ScrapingResult.NoGroupSelected; }
 
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
                 mangoTitle = HtmlQueries.GetMangoTitleFromMangoPage(doc);
@@ -195,7 +197,7 @@ namespace TMOScraper.Core
 
                         TokenSource.Token.ThrowIfCancellationRequested();
 
-                        if (groups.Contains(groupName) || (groupScraping && groups.Any(groupName.Contains)))
+                        if (allGroups || groups.Contains(groupName) || (groupScraping && groups.Any(groupName.Contains)))
                         {
                             currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, groupName));
 

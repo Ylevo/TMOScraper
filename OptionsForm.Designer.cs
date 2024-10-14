@@ -270,6 +270,9 @@
             Controls.Add(lbl_puppeteer);
             Controls.Add(txtBox_domain);
             Controls.Add(lbl_domain);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
+            MinimizeBox = false;
             Name = "OptionsForm";
             Text = "Options";
             ((System.ComponentModel.ISupportInitialize)numeric_chapterDelay).EndInit();

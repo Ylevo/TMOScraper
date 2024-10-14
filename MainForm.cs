@@ -157,9 +157,10 @@ namespace TMOScraper
 
         private void ToggleUI()
         {
+            txtBox_mangoUrl.Enabled = !txtBox_mangoUrl.Enabled;
             btn_setFolder.Enabled = !btn_setFolder.Enabled;
             listBox_scannies.Enabled = !listBox_scannies.Enabled;
-            btn_scan.Enabled = !btn_scan.Enabled;
+            btn_scan.Enabled = !btn_scan.Enabled && !txtBox_mangoUrl.Text.Contains("\r");
             btn_download.Enabled = !btn_download.Enabled;
             btn_stop.Enabled = !btn_stop.Enabled;
             btn_selectAllScannies.Enabled = !btn_selectAllScannies.Enabled;
@@ -177,6 +178,7 @@ namespace TMOScraper
         private void TxtBoxMangoUrl_TextChanged(object sender, EventArgs e)
         {
             listBox_scannies.Visible = false;
+            btn_scan.Enabled = !txtBox_mangoUrl.Text.Contains("\r");
         }
 
         private void Btn_selectAllScannies_Click(object sender, EventArgs e)
