@@ -69,13 +69,13 @@
             lbl_mangoUrl.AutoSize = true;
             lbl_mangoUrl.Location = new Point(14, 37);
             lbl_mangoUrl.Name = "lbl_mangoUrl";
-            lbl_mangoUrl.Size = new Size(75, 15);
+            lbl_mangoUrl.Size = new Size(83, 15);
             lbl_mangoUrl.TabIndex = 1;
-            lbl_mangoUrl.Text = "Mango URL :";
+            lbl_mangoUrl.Text = "Mango URLs  :";
             // 
             // txtBox_mangoUrl
             // 
-            txtBox_mangoUrl.Location = new Point(95, 34);
+            txtBox_mangoUrl.Location = new Point(103, 34);
             txtBox_mangoUrl.Multiline = true;
             txtBox_mangoUrl.Name = "txtBox_mangoUrl";
             txtBox_mangoUrl.ScrollBars = ScrollBars.Vertical;
@@ -87,7 +87,7 @@
             // txtBox_setFolder
             // 
             txtBox_setFolder.Enabled = false;
-            txtBox_setFolder.Location = new Point(95, 127);
+            txtBox_setFolder.Location = new Point(103, 128);
             txtBox_setFolder.Name = "txtBox_setFolder";
             txtBox_setFolder.Size = new Size(441, 23);
             txtBox_setFolder.TabIndex = 4;
@@ -96,7 +96,7 @@
             // 
             btn_setFolder.Location = new Point(13, 127);
             btn_setFolder.Name = "btn_setFolder";
-            btn_setFolder.Size = new Size(76, 23);
+            btn_setFolder.Size = new Size(84, 23);
             btn_setFolder.TabIndex = 5;
             btn_setFolder.Text = "Set Folder";
             btn_setFolder.UseVisualStyleBackColor = true;
@@ -116,9 +116,9 @@
             // listBox_scannies
             // 
             listBox_scannies.FormattingEnabled = true;
-            listBox_scannies.Location = new Point(139, 215);
+            listBox_scannies.Location = new Point(139, 213);
             listBox_scannies.Name = "listBox_scannies";
-            listBox_scannies.Size = new Size(397, 76);
+            listBox_scannies.Size = new Size(405, 76);
             listBox_scannies.TabIndex = 7;
             toolTip_mainForm.SetToolTip(listBox_scannies, "Select the groups you want to scrap chapters from.");
             listBox_scannies.Visible = false;
@@ -128,7 +128,7 @@
             chkBox_mangoSubfolder.AutoSize = true;
             chkBox_mangoSubfolder.Checked = true;
             chkBox_mangoSubfolder.CheckState = CheckState.Checked;
-            chkBox_mangoSubfolder.Location = new Point(382, 160);
+            chkBox_mangoSubfolder.Location = new Point(390, 160);
             chkBox_mangoSubfolder.Name = "chkBox_mangoSubfolder";
             chkBox_mangoSubfolder.Size = new Size(154, 19);
             chkBox_mangoSubfolder.TabIndex = 9;
@@ -140,7 +140,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(242, 466);
+            label1.Location = new Point(254, 468);
             label1.Name = "label1";
             label1.Size = new Size(52, 15);
             label1.TabIndex = 11;
@@ -160,7 +160,7 @@
             // lbl_language
             // 
             lbl_language.AutoSize = true;
-            lbl_language.Location = new Point(12, 159);
+            lbl_language.Location = new Point(14, 159);
             lbl_language.Name = "lbl_language";
             lbl_language.Size = new Size(65, 15);
             lbl_language.TabIndex = 15;
@@ -169,7 +169,7 @@
             // cmbBox_language
             // 
             cmbBox_language.FormattingEnabled = true;
-            cmbBox_language.Location = new Point(95, 156);
+            cmbBox_language.Location = new Point(103, 156);
             cmbBox_language.Name = "cmbBox_language";
             cmbBox_language.Size = new Size(121, 23);
             cmbBox_language.TabIndex = 16;
@@ -221,7 +221,7 @@
             // chkBox_skipMangos
             // 
             chkBox_skipMangos.AutoSize = true;
-            chkBox_skipMangos.Location = new Point(382, 185);
+            chkBox_skipMangos.Location = new Point(390, 185);
             chkBox_skipMangos.Name = "chkBox_skipMangos";
             chkBox_skipMangos.Size = new Size(54, 19);
             chkBox_skipMangos.TabIndex = 21;
@@ -231,7 +231,7 @@
             // 
             // numeric_skipMangos
             // 
-            numeric_skipMangos.Location = new Point(442, 184);
+            numeric_skipMangos.Location = new Point(450, 184);
             numeric_skipMangos.Maximum = new decimal(new int[] { 999, 0, 0, 0 });
             numeric_skipMangos.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numeric_skipMangos.Name = "numeric_skipMangos";
@@ -252,9 +252,9 @@
             // 
             // panel_logger
             // 
-            panel_logger.Location = new Point(139, 310);
+            panel_logger.Location = new Point(139, 311);
             panel_logger.Name = "panel_logger";
-            panel_logger.Size = new Size(397, 138);
+            panel_logger.Size = new Size(405, 138);
             panel_logger.TabIndex = 24;
             // 
             // menuStrip1
