@@ -25,7 +25,7 @@ namespace TMOScraper.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("https://visortmo.com")]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://zonatmo.com")]
         public string Domain {
             get {
                 return ((string)(this["Domain"]));

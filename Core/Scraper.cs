@@ -109,7 +109,7 @@ namespace TMOScraper.Core
 
                 currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, groupName));
 
-                if (Directory.Exists(currentFolder))
+                if (FolderExists(currentFolder))
                 {
                     Log.Warning($"Skipping chapter {chapterNumber} by \"{groupName}\". Folder already exists.");
                 }
@@ -117,9 +117,9 @@ namespace TMOScraper.Core
                 {
                     Directory.CreateDirectory(currentFolder);
 
-                    Log.Information($"Downloading chapter {chapterNumber} by \"{groupName}\"");
+                    Log.Information($"Downloading chapter {chapterNumber} by \"{groupName}\".");
                     await Downloader.DownloadChapter(currentFolder, imgUrls, TokenSource.Token);
-                    Log.Information($"Done downloading chapter {chapterNumber} by \"{groupName}\"");
+                    Log.Information($"Done downloading chapter {chapterNumber} by \"{groupName}\".");
 
                     if (Settings.Default.ConvertImages)
                     {
@@ -165,7 +165,7 @@ namespace TMOScraper.Core
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token); }, TokenSource.Token));
                 mangoTitle = HtmlQueries.GetMangoTitleFromMangoPage(doc);
 
-                Log.Information($"Scraping chapters of \"{mangoTitle}\"");
+                Log.Information($"Scraping chapters of \"{mangoTitle}\".");
 
                 SortedDictionary<string, (string groupName, string chapterLink)[]> chapters = isOneShot ? HtmlQueries.GetOneShotLinks(doc) : HtmlQueries.GetChaptersLinks(doc);
 
@@ -189,7 +189,7 @@ namespace TMOScraper.Core
 
                     actuallyDidSomething = false;
                     chapterNumber = isOneShot ? "000" : "c" + chapter.Key;
-                    Log.Information($"Scraping chapter {chapterNumber}");
+                    Log.Information($"Scraping chapter {chapterNumber} of \"{mangoTitle}\".");
 
                     foreach (var (groupName, chapterLink) in chapter.Value)
                     {
@@ -201,7 +201,9 @@ namespace TMOScraper.Core
                         {
                             currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, groupName));
 
-                            if (Directory.Exists(currentFolder))
+                            var foldersPresent = Directory.GetDirectories(mainFolder).Select(d => new DirectoryInfo(d).Name);
+
+                            if (FolderExists(currentFolder))
                             {
                                 Log.Warning($"Skipping chapter {chapterNumber} by \"{groupName}\". Folder already exists.");
                                 continue;
@@ -211,9 +213,9 @@ namespace TMOScraper.Core
                             imgUrls = HtmlQueries.GetChapterImages(doc);
                             Directory.CreateDirectory(currentFolder);
 
-                            Log.Information($"Downloading chapter {chapterNumber} by \"{groupName}\"");
+                            Log.Information($"Downloading chapter {chapterNumber} by \"{groupName}\".");
                             await Downloader.DownloadChapter(currentFolder, imgUrls, TokenSource.Token);
-                            Log.Information($"Done downloading chapter {chapterNumber} by \"{groupName}\"");
+                            Log.Information($"Done downloading chapter {chapterNumber} by \"{groupName}\".");
 
                             if (Settings.Default.ConvertImages)
                             {
@@ -234,11 +236,15 @@ namespace TMOScraper.Core
 
                     if (!actuallyDidSomething)
                     {
-                        Log.Information("No upload found or chapter already downloaded.");
+                        Log.Information("No upload found or chapter(s) already downloaded.");
+                    }
+                    else
+                    {
+                        Log.Information($"Done scraping chapter {chapterNumber} of \"{mangoTitle}\".");
                     }
                 }
 
-                Log.Information($"Done scraping chapters of \"{mangoTitle}\"");
+                Log.Information($"Done scraping chapters of \"{mangoTitle}\".");
 
                 return ScrapingResult.Success;
             }
@@ -276,7 +282,7 @@ namespace TMOScraper.Core
                     HtmlQueries.GetGroupName(doc)
                 };
                 var mangos = HtmlQueries.GetGroupMangos(doc);
-                Log.Information($"Scraping chapters by \"{groupName[0]}\"");
+                Log.Information($"Scraping chapters by \"{groupName[0]}\".");
 
                 foreach (string mangoUrl in mangos)
                 {
@@ -304,7 +310,7 @@ namespace TMOScraper.Core
                     await Task.Delay(Settings.Default.MangoDelay);
                 }
 
-                Log.Information($"Done scraping chapters by \"{groupName[0]}\"");
+                Log.Information($"Done scraping chapters by \"{groupName[0]}\".");
 
                 return ScrapingResult.Success;
             }
@@ -320,6 +326,22 @@ namespace TMOScraper.Core
                     Log.Warning($"{notFoundMangos.Count} mango were not found : \n{string.Join("\n", notFoundMangos.ToArray())}");
                 }
             }
+        }
+
+        private bool FolderExists(string path)
+        {
+            string pattern = @"(?<title>.+?)(?:\s?\[(?<language>[a-z]{2}(?:-[a-z]{2})?|[a-zA-Z]{3}|[a-zA-Z]+)?\])?\s-\s(?<prefix>(?:[c](?:h(?:a?p?(?:ter)?)?)?\.?\s?))?(?<chapter>\d+(?:\.\d+)?)(?:\s?\((?:[v](?:ol(?:ume)?(?:s)?)?\.?\s?)?(?<volume>\d+(?:\.\d+)?)?\))?(?:\s?\[(?:(?<group>.+))?\])?";
+            string mainFolder = Directory.GetParent(path).FullName;
+            string folderToLookFor = Path.GetFileName(path);
+            var foldersPresent = Directory.GetDirectories(mainFolder).Select(d => new DirectoryInfo(d).Name).ToList();
+
+            for (int i = 0; i < foldersPresent.Count; i++)
+            {
+                Match m = Regex.Match(foldersPresent[i], pattern, RegexOptions.IgnoreCase);
+                foldersPresent[i] = m.Groups["title"] + " [" + m.Groups["language"] + "] - " + m.Groups["prefix"] + m.Groups["chapter"] + " [" + m.Groups["group"] + "]";
+            }
+
+            return Directory.Exists(path) || foldersPresent.Contains(folderToLookFor);
         }
 
         private ResiliencePipeline SetRetryPipeline()

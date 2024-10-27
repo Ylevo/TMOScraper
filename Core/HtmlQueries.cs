@@ -1,5 +1,7 @@
 ﻿using HtmlAgilityPack;
+using System;
 using System.Net;
+using System.Text;
 using System.Text.RegularExpressions;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
@@ -116,10 +118,19 @@ namespace TMOScraper.Core
             return splits[0].PadLeft(3, '0') + (int.Parse(splits[1]) > 0 ? "." + splits[1].Replace("0", "") : "");
         }
 
-        public static string RemoveForbbidenPathCharacters(string filename)
+        public static string RemoveForbbidenPathCharacters(string input)
         {
-            // Split the string using forbidden characters to remove them, join them with a space as delimiter, truncate to 40, trim and remove excessive spaces
-            return Regex.Replace(string.Join(" ", WebUtility.HtmlDecode(filename).Split(forbiddenPathCharacters)).Truncate(40).Trim(new char[] { ' ', '.' }), @"\s+", " ");
+            // Normalize the entire string if we find any surrogate pair unicode character, as we truncate the string later it might cause unicode characters to be split in half
+            if (input.Any(c => Char.IsLowSurrogate(c) || Char.IsHighSurrogate(c)))
+            {
+                var newStringBuilder = new StringBuilder();
+                newStringBuilder.Append(input.Normalize(NormalizationForm.FormKD)
+                                                .Where(x => x < 128)
+                                                .ToArray());
+                input = newStringBuilder.ToString();
+            }
+            // Split the string using forbidden characters to remove them, join them with a space as delimiter, truncate to 40, trim and remove spaces in excess
+            return Regex.Replace(string.Join(" ", WebUtility.HtmlDecode(input).Split(forbiddenPathCharacters)).Truncate(40).Trim(new char[] { ' ', '.' }), @"\s+", " ");
         }
     }
 
