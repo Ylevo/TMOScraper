@@ -8,7 +8,7 @@ using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace TMOScraper.Core
 {
-    public class Scraper
+    public partial class Scraper
     {
         public IPageFetcher? PageFetcher { get; set; } = null;
         public CancellationTokenSource? TokenSource { get; init; }
@@ -17,7 +17,7 @@ namespace TMOScraper.Core
         private ResiliencePipeline retryPipeline;
         private int toSkipMango = 0;
         private readonly string language;
-        private const string FolderNameTemplate = "{0} [{1}] - {2} [{3}]";
+        private const string FolderNameTemplate = "{0} [{1}] - {2} ({3}) [{4}]";
 
 
         public Scraper(CancellationTokenSource tokenSource, HtmlDocument document) 
@@ -86,6 +86,7 @@ namespace TMOScraper.Core
         {
             string mangoTitle,
                 chapterNumber,
+                chapterTitle,
                 groupName,
                 currentFolder = "",
                 mainFolder = Settings.Default.MainFolder;
@@ -97,6 +98,7 @@ namespace TMOScraper.Core
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token, PageType.Chapter); }, TokenSource.Token));
 
                 chapterNumber = HtmlQueries.GetChapterNumberFromChapterPage(doc);
+                chapterTitle = HtmlQueries.GetChapterTitleFromChapterPage(doc);
                 groupName = HtmlQueries.GetGroupNameFromChapterPage(doc);
                 mangoTitle = HtmlQueries.GetMangoTitleFromChapterPage(doc);
                 imgUrls = HtmlQueries.GetChapterImages(doc);
@@ -107,7 +109,7 @@ namespace TMOScraper.Core
                     Directory.CreateDirectory(mainFolder);
                 }
 
-                currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, groupName));
+                currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, chapterTitle, groupName));
 
                 if (FolderExists(currentFolder))
                 {
@@ -167,12 +169,12 @@ namespace TMOScraper.Core
 
                 Log.Information($"Scraping chapters of \"{mangoTitle}\".");
 
-                SortedDictionary<string, (string groupName, string chapterLink)[]> chapters = isOneShot ? HtmlQueries.GetOneShotLinks(doc) : HtmlQueries.GetChaptersLinks(doc);
+                SortedDictionary<string, (string groupName, string chapterLink, string chapterTitle)[]> chapters = isOneShot ? HtmlQueries.GetOneShotLinks(doc) : HtmlQueries.GetChaptersLinks(doc);
 
                 if (chapterRange.skipChapters && !isOneShot)
                 {
 
-                    chapters = new SortedDictionary<string, (string groupName, string chapterLink)[]>
+                    chapters = new SortedDictionary<string, (string groupName, string chapterLink, string chapterTitle)[]>
                                 (chapters.Where(d => decimal.Parse(d.Key) >= chapterRange.from && decimal.Parse(d.Key) <= chapterRange.to)
                                 .ToDictionary(d => d.Key, d => d.Value));
                 }
@@ -191,7 +193,7 @@ namespace TMOScraper.Core
                     chapterNumber = isOneShot ? "000" : "c" + chapter.Key;
                     Log.Information($"Scraping chapter {chapterNumber} of \"{mangoTitle}\".");
 
-                    foreach (var (groupName, chapterLink) in chapter.Value)
+                    foreach (var (groupName, chapterLink, chapterTitle) in chapter.Value)
                     {
                         currentFolder = "";
 
@@ -199,7 +201,7 @@ namespace TMOScraper.Core
 
                         if (allGroups || groups.Contains(groupName) || (groupScraping && groups.Any(groupName.Contains)))
                         {
-                            currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, groupName));
+                            currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, chapterTitle, groupName));
 
                             var foldersPresent = Directory.GetDirectories(mainFolder).Select(d => new DirectoryInfo(d).Name);
 
@@ -330,14 +332,13 @@ namespace TMOScraper.Core
 
         private bool FolderExists(string path)
         {
-            string pattern = @"(?<title>.+?)(?:\s?\[(?<language>[a-z]{2}(?:-[a-z]{2})?|[a-zA-Z]{3}|[a-zA-Z]+)?\])?\s-\s(?<prefix>(?:[c](?:h(?:a?p?(?:ter)?)?)?\.?\s?))?(?<chapter>\d+(?:\.\d+)?)(?:\s?\((?:[v](?:ol(?:ume)?(?:s)?)?\.?\s?)?(?<volume>\d+(?:\.\d+)?)?\))?(?:\s?\[(?:(?<group>.+))?\])?";
             string mainFolder = Directory.GetParent(path).FullName;
             string folderToLookFor = Path.GetFileName(path);
             var foldersPresent = Directory.GetDirectories(mainFolder).Select(d => new DirectoryInfo(d).Name).ToList();
 
             for (int i = 0; i < foldersPresent.Count; i++)
             {
-                Match m = Regex.Match(foldersPresent[i], pattern, RegexOptions.IgnoreCase);
+                Match m = Filename_Regex().Match(foldersPresent[i]);
                 foldersPresent[i] = m.Groups["title"] + " [" + m.Groups["language"] + "] - " + m.Groups["prefix"] + m.Groups["chapter"] + " [" + m.Groups["group"] + "]";
             }
 
@@ -363,5 +364,7 @@ namespace TMOScraper.Core
             return new ResiliencePipelineBuilder().AddRetry(retryOptions).Build();
         }
 
+        [GeneratedRegex(@"(?:\[(?<artist>.+?)?\])?\s?(?<title>.+?)(?:\s?\[(?<language>[a-z]{2}(?:-[a-z]{2})?|[a-zA-Z]{3}|[a-zA-Z]+)?\])?\s-\s(?<prefix>(?:[c](?:h(?:a?p?(?:ter)?)?)?\.?\s?))?(?<chapter>\d+(?:\.\d+)?)(?:\s?\((?:[v](?:ol(?:ume)?(?:s)?)?\.?\s?)?(?<volume>\d+(?:\.\d+)?)?\))?(?:\s?\((?<chapter_title>.+)\))?(?:\s?\{(?<publish_date>(?<publish_year>\d{4})-(?<publish_month>\d{2})-(?<publish_day>\d{2})(?:[T\s](?<publish_hour>\d{2})[\:\-](?<publish_minute>\d{2})(?:[\:\-](?<publish_microsecond>\d{2}))?(?:(?<publish_offset>[+-])(?<publish_timezone>\d{2}[\:\-]?\d{2}))?)?)\})?(?:\s?\[(?:(?<group>.+))?\])?(?:\s?\{v?(?<version>\d)?\})?(?:\.(?<extension>zip|cbz))?$", RegexOptions.IgnoreCase, "fr-FR")]
+        private static partial Regex Filename_Regex();
     }
 }

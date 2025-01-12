@@ -50,6 +50,7 @@
             numeric_mangoDelay = new NumericUpDown();
             toolTip_optionsForm = new ToolTip(components);
             chkBox_verboseLogging = new CheckBox();
+            chkBox_scrapChapterTitles = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)numeric_chapterDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_retryDelay).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numeric_maxRetries).BeginInit();
@@ -181,7 +182,7 @@
             // 
             // btn_save
             // 
-            btn_save.Location = new Point(280, 174);
+            btn_save.Location = new Point(285, 197);
             btn_save.Name = "btn_save";
             btn_save.Size = new Size(75, 23);
             btn_save.TabIndex = 0;
@@ -191,7 +192,7 @@
             // 
             // btn_cancel
             // 
-            btn_cancel.Location = new Point(361, 174);
+            btn_cancel.Location = new Point(366, 197);
             btn_cancel.Name = "btn_cancel";
             btn_cancel.Size = new Size(75, 23);
             btn_cancel.TabIndex = 14;
@@ -246,11 +247,23 @@
             toolTip_optionsForm.SetToolTip(chkBox_verboseLogging, "When checked, will log files changes such as download/convert/split individually.");
             chkBox_verboseLogging.UseVisualStyleBackColor = true;
             // 
+            // chkBox_scrapChapterTitles
+            // 
+            chkBox_scrapChapterTitles.AutoSize = true;
+            chkBox_scrapChapterTitles.Location = new Point(12, 181);
+            chkBox_scrapChapterTitles.Name = "chkBox_scrapChapterTitles";
+            chkBox_scrapChapterTitles.Size = new Size(126, 19);
+            chkBox_scrapChapterTitles.TabIndex = 19;
+            chkBox_scrapChapterTitles.Text = "Scrap chapter titles";
+            toolTip_optionsForm.SetToolTip(chkBox_scrapChapterTitles, "When checked, will log files changes such as download/convert/split individually.");
+            chkBox_scrapChapterTitles.UseVisualStyleBackColor = true;
+            // 
             // OptionsForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(453, 209);
+            ClientSize = new Size(453, 232);
+            Controls.Add(chkBox_scrapChapterTitles);
             Controls.Add(chkBox_verboseLogging);
             Controls.Add(numeric_mangoDelay);
             Controls.Add(lbl_mangoDelay);
@@ -305,5 +318,6 @@
         private NumericUpDown numeric_mangoDelay;
         private ToolTip toolTip_optionsForm;
         private CheckBox chkBox_verboseLogging;
+        private CheckBox chkBox_scrapChapterTitles;
     }
 }

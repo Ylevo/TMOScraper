@@ -19,6 +19,7 @@ namespace TMOScraper
             chkBox_split.Checked = Settings.Default.SplitImages;
             chkBox_logger.Checked = Settings.Default.FileLogging;
             chkBox_verboseLogging.Checked = Settings.Default.VerboseLogging;
+            chkBox_scrapChapterTitles.Checked = Settings.Default.ScrapChapterTitles;
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
@@ -27,7 +28,7 @@ namespace TMOScraper
             {
                 Settings.Default.Domain = new UriBuilder(txtBox_domain.Text) { Scheme = Uri.UriSchemeHttps, Port = -1 }.Uri.ToString()[..^1];
             }
-            catch 
+            catch
             {
                 MessageBox.Show("URL entered for the TMO domain is invalid.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 return;
@@ -42,6 +43,7 @@ namespace TMOScraper
             Settings.Default.SplitImages = chkBox_split.Checked;
             Settings.Default.FileLogging = chkBox_logger.Checked;
             Settings.Default.VerboseLogging = chkBox_verboseLogging.Checked;
+            Settings.Default.ScrapChapterTitles = chkBox_scrapChapterTitles.Checked;
 
             Settings.Default.Save();
             Close();
