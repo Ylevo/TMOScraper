@@ -30,7 +30,7 @@ namespace TMOScraper
             InitializeComponent();
             SetupLogger();
 
-            if (true || Settings.Default.ScrapChapterTitles && OperatingSystem.IsWindows() && (int)Registry.GetValue("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\FileSystem", "LongPathsEnabled", 0) != 1)
+            if (Settings.Default.ScrapChapterTitles && OperatingSystem.IsWindows() && (int)Registry.GetValue("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\FileSystem", "LongPathsEnabled", 0) != 1)
             {
                 Log.Warning("Scraping chapter titles is on but long paths are not enabled on your Windows installation. See:\r\n{0}", "https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry#enable-long-paths-in-windows-10-version-1607-and-later");
             }
