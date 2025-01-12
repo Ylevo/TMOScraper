@@ -98,7 +98,7 @@ namespace TMOScraper.Core
                 doc.LoadHtml(await retryPipeline.ExecuteAsync(async token => { return await PageFetcher.GetPage(url, token, PageType.Chapter); }, TokenSource.Token));
 
                 chapterNumber = HtmlQueries.GetChapterNumberFromChapterPage(doc);
-                chapterTitle = HtmlQueries.GetChapterTitleFromChapterPage(doc);
+                chapterTitle = Settings.Default.ScrapChapterTitles ? HtmlQueries.GetChapterTitleFromChapterPage(doc) : "";
                 groupName = HtmlQueries.GetGroupNameFromChapterPage(doc);
                 mangoTitle = HtmlQueries.GetMangoTitleFromChapterPage(doc);
                 imgUrls = HtmlQueries.GetChapterImages(doc);
@@ -201,7 +201,7 @@ namespace TMOScraper.Core
 
                         if (allGroups || groups.Contains(groupName) || (groupScraping && groups.Any(groupName.Contains)))
                         {
-                            currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, chapterTitle, groupName));
+                            currentFolder = Path.Combine(mainFolder, String.Format(FolderNameTemplate, mangoTitle, language, chapterNumber, Settings.Default.ScrapChapterTitles ? chapterTitle : "", groupName));
 
                             var foldersPresent = Directory.GetDirectories(mainFolder).Select(d => new DirectoryInfo(d).Name);
 
