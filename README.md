@@ -26,6 +26,6 @@ The rest of the options are mostly self-explanatory. The different delays availa
 ## Credits
 
 - [Html Agility Pack](https://github.com/zzzprojects/html-agility-pack)
-- [Puppeteer Sharp](https://github.com/hardkoded/puppeteer-sharp) - to give the console a bit of colour.
+- [Puppeteer Sharp](https://github.com/hardkoded/puppeteer-sharp)
 - [Polly](https://github.com/App-vNext/Polly)
 - [Serilog](https://github.com/serilog/serilog)
