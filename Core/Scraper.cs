@@ -250,7 +250,7 @@ namespace TMOScraper.Core
 
                 return ScrapingResult.Success;
             }
-            catch (PageFetchException ex) when (ex is PageFetchNotFoundException && groupScraping)
+            catch (PageFetchException ex) when (ex is PageFetchNotFoundException && (groupScraping || allGroups))
             {
                 Log.Warning(ex.Message);
                 return ScrapingResult.PageNotFound;
