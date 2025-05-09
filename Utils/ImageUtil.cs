@@ -16,7 +16,8 @@ namespace TMOScraper.Utils
                 foreach (string originalImage in imagesPaths)
                 {
                     token.ThrowIfCancellationRequested();
-                    using MagickImageCollection imgCollection = new(originalImage);
+                    var imageBytes = File.ReadAllBytes(originalImage);
+                    using MagickImageCollection imgCollection = new(imageBytes);
 
                     if (imgCollection.Count > 1)
                     {
@@ -66,7 +67,8 @@ namespace TMOScraper.Utils
                 {
                     token.ThrowIfCancellationRequested();
 
-                    using MagickImage originalImg = new(file);
+                    var imageBytes = File.ReadAllBytes(file);
+                    using MagickImage originalImg = new(imageBytes);
                     decimal originalImgHeight = originalImg.Height;
 
                     if (originalImgHeight >= 10000)
