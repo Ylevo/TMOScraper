@@ -74,14 +74,13 @@ namespace TMOScraper.Core
 
         public static List<string> GetGroupMangos(HtmlDocument doc)
         {
-            return doc.DocumentNode.SelectNodes("//div[contains(concat(' ',normalize-space(@class),' '),' proyect-item ')]/a").Select(m => m.Attributes["href"].Value.Trim()).ToList();
+            return doc.DocumentNode.SelectNodes("//div[contains(concat(' ',normalize-space(@class),' '),' proyect-item ')]/a")?.Select(m => m.Attributes["href"].Value.Trim()).ToList() ?? [];
         }
 
         public static List<string> GetChapterImages(HtmlDocument doc)
         {
-            return doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]").Select(img => img.Attributes["data-src"].Value.Trim()).ToList();
+            return doc.DocumentNode.SelectNodes("//img[contains(concat(' ',normalize-space(@class),' '),' viewer-img ')]")?.Select(img => img.Attributes["data-src"].Value.Trim()).ToList() ?? [];
         }
-        
 
         public static SortedDictionary<string, (string, string, string)[]> GetChaptersLinks(HtmlDocument doc)
         {
