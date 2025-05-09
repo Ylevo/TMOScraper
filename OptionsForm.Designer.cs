@@ -252,10 +252,10 @@
             chkBox_scrapChapterTitles.AutoSize = true;
             chkBox_scrapChapterTitles.Location = new Point(12, 181);
             chkBox_scrapChapterTitles.Name = "chkBox_scrapChapterTitles";
-            chkBox_scrapChapterTitles.Size = new Size(126, 19);
+            chkBox_scrapChapterTitles.Size = new Size(134, 19);
             chkBox_scrapChapterTitles.TabIndex = 19;
-            chkBox_scrapChapterTitles.Text = "Scrap chapter titles";
-            toolTip_optionsForm.SetToolTip(chkBox_scrapChapterTitles, "When checked, will log files changes such as download/convert/split individually.");
+            chkBox_scrapChapterTitles.Text = "Scrap chapters' titles";
+            toolTip_optionsForm.SetToolTip(chkBox_scrapChapterTitles, "Enabling long paths on windows is highly recommended if not required.");
             chkBox_scrapChapterTitles.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
